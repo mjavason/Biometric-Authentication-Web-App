@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biometric Authentication</title>
+  </head>
+  <body>
+    <h1>Biometric App Test</h1>
+    <script>
+      const publicKeyCredentialCreationOptions = {
+        challenge: Uint8Array.from('randomStringFromServer', (c) =>
+          c.charCodeAt(0)
+        ),
+        rp: {
+          name: 'Biometric Web App',
+          id: 'https://biometric-authentication-web-app.onrender.com',
+        },
+        user: {
+          id: Uint8Array.from('UZSL85T9AFC', (c) => c.charCodeAt(0)),
+          name: 'lee@webauthn.guide',
+          displayName: 'Lee',
+        },
+        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+        authenticatorSelection: {
+          authenticatorAttachment: 'cross-platform',
+        },
+        timeout: 60000,
+        attestation: 'direct',
+      };
+
+      const credential = navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions,
+      });
+
+      console.log(credential);
+    </script>
+  </body>
+</html>

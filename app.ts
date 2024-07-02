@@ -18,7 +18,6 @@ const baseURL = 'https://httpbin.org';
 //#endregion
 
 //#region Server setup
-
 async function pingSelf() {
   try {
     const { data } = await axios.get(`http://localhost:5000`);
