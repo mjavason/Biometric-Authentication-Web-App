@@ -1,2 +1,2 @@
-# Biometric-Authentication-App
+# Biometric-Authentication-Web-App
 Simple web app with support for biometric authentication. Users can register and add their biometric credentials if supported by their devices and browsers.
