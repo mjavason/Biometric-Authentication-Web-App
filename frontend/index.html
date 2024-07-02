@@ -8,32 +8,38 @@
   <body>
     <h1>Biometric App Test</h1>
     <script>
-      const publicKeyCredentialCreationOptions = {
-        challenge: Uint8Array.from('randomStringFromServer', (c) =>
-          c.charCodeAt(0)
-        ),
-        rp: {
-          name: 'Biometric Web App',
-          id: 'biometric-authentication-web-app.onrender.com',
-        },
-        user: {
-          id: Uint8Array.from('UZSL85T9AFC', (c) => c.charCodeAt(0)),
-          name: 'lee@webauthn.guide',
-          displayName: 'Lee',
-        },
-        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-        },
-        timeout: 60000,
-        attestation: 'direct',
-      };
+      async function createCredential() {
+        try {
+          const publicKeyCredentialCreationOptions = {
+            challenge: new Uint8Array(32), // Should be replaced with a real challenge from your server
+            rp: {
+              name: 'Biometric Web App',
+              id: 'biometric-authentication-web-app.onrender.com',
+            },
+            user: {
+              id: Uint8Array.from('UZSL85T9AFC', (c) => c.charCodeAt(0)),
+              name: 'lee@webauthn.guide',
+              displayName: 'Lee',
+            },
+            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+            authenticatorSelection: {
+              authenticatorAttachment: 'platform',
+            },
+            timeout: 60000,
+            attestation: 'direct',
+          };
 
-      const credential = navigator.credentials.create({
-        publicKey: publicKeyCredentialCreationOptions,
-      });
+          const credential = await navigator.credentials.create({
+            publicKey: publicKeyCredentialCreationOptions,
+          });
 
-      console.log(credential);
+          console.log(credential);
+        } catch (e) {
+          window.alert(e.message);
+        }
+      }
+
+      createCredential();
     </script>
   </body>
 </html>
