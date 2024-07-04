@@ -16,12 +16,16 @@
               name: 'Biometric Web App',
               id: 'biometric-authentication-web-app.onrender.com',
             },
+            pubKeyCredParams: [
+              { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
+              { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
+              // Add more algorithms as needed
+            ],
             user: {
               id: Uint8Array.from('UZSL85T9AFC', (c) => c.charCodeAt(0)),
               name: 'lee@webauthn.guide',
               displayName: 'Lee',
             },
-            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
             authenticatorSelection: {
               // authenticatorAttachment: 'platform',
               userVerification: 'required',
