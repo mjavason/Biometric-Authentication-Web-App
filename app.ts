@@ -12,6 +12,39 @@ app.use(cors());
 dotenv.config({ path: './.env' });
 //#endregion
 
+//#region code here
+function generateRandomNumbers(count: number, min: number, max: number) {
+  const randomNumbers = [];
+  for (let i = 0; i < count; i++) {
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    randomNumbers.push(randomNumber);
+  }
+  return randomNumbers;
+}
+
+function generatePublicKeyCredentials(user: {
+  id: string;
+  name: string;
+  displayName: string;
+}) {
+  return {
+    challenge: generateRandomNumbers(32, 0, 9), // Should be replaced with a real challenge from your server
+    rp: {
+      name: 'Biometric Web App',
+      id: 'biometric-authentication-web-app.onrender.com',
+    },
+    user,
+    pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+    authenticatorSelection: {
+      // authenticatorAttachment: 'platform',
+      userVerification: 'preferred',
+    },
+    timeout: 60000,
+    attestation: 'direct',
+  };
+}
+//#endregion code here
+
 //#region keys and configs
 const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
