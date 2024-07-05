@@ -12,6 +12,14 @@ app.use(cors());
 dotenv.config({ path: './.env' });
 //#endregion
 
+//#region keys and configs
+const PORT = process.env.PORT || 3000;
+const baseURL = 'https://httpbin.org';
+var database: { users: [{ email: string; id: string; key: any }] } | any = {
+  users: [],
+};
+//#endregion
+
 //#region code here
 function generateRandomNumbers(count: number, min: number, max: number) {
   const randomNumbers = [];
@@ -43,12 +51,28 @@ function generatePublicKeyCredentials(user: {
     attestation: 'direct',
   };
 }
-//#endregion code here
 
-//#region keys and configs
-const PORT = process.env.PORT || 3000;
-const baseURL = 'https://httpbin.org';
-//#endregion
+// default message
+app.post('/register/:email', async (req: Request, res: Response) => {
+  const user = {
+    email: req.params.email,
+    id: generateRandomNumbers(9, 0, 9).toString(),
+  };
+  database.users.push(user);
+
+  return res.send({
+    message: 'User registered successfully',
+    data: {
+      user,
+      publicKeyCredentials: generatePublicKeyCredentials({
+        id: user.id,
+        name: user.email,
+        displayName: user.email,
+      }),
+    },
+  });
+});
+//#endregion code here
 
 //#region Server setup
 async function pingSelf() {
