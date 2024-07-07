@@ -3,12 +3,14 @@ import 'express-async-errors';
 import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import morgan from 'morgan';
 
 //#region app setup
 const app = express();
 app.use(express.json()); // Middleware to parse JSON or URL-encoded data
 app.use(express.urlencoded({ extended: true })); // For complex form data
 app.use(cors());
+app.use(morgan('dev')); // Options include: 'combined', 'common', 'dev', 'tiny', 'combined' logs more details
 dotenv.config({ path: './.env' });
 //#endregion
 
@@ -56,7 +58,23 @@ app.post('/register/:email', async (req: Request, res: Response) => {
     email: req.params.email,
     id: generateRandomNumbers(9, 0, 9),
   };
+  let existingUser;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].email == user.email) {
+      existingUser = users[i];
+      break;
+    }
+  }
+
+  if (existingUser) {
+    return res
+      .status(403)
+      .send({ success: false, message: 'User email already exists' });
+  }
+
   users.push(user);
+  console.log(users);
 
   return res.send({
     message: 'User registered successfully',
@@ -67,11 +85,36 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   });
 });
 
+app.post('/set-credential', async (req: Request, res: Response) => {
+  const email = req.body.email;
+  const credentials = req.body.credentials;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].email == email) {
+      if (users[i].key)
+        return res.status(403).send({
+          successful: false,
+          message: 'Registration already complete. Try logging in',
+        });
+
+      users[i].key = credentials;
+      return res.send({
+        successful: true,
+        message: 'Registration complete. Now try logging in',
+      });
+    }
+  }
+
+  return res
+    .status(404)
+    .send({ success: false, message: 'User email does not exist' });
+});
+
 app.post('/login', async (req: Request, res: Response) => {
   const { email, credentials } = req.body;
   let existingUser;
 
-  for (let i = 0; i <= users.length; i++) {
+  for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
       existingUser = users[i];
       break;
