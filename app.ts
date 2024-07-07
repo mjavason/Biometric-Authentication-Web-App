@@ -89,6 +89,11 @@ app.post('/set-credential', async (req: Request, res: Response) => {
   const email = req.body.email;
   const credentials = req.body.credentials;
 
+  if (!email || !credentials)
+    return res
+      .status(403)
+      .send({ successful: false, message: 'email or credentials is missing' });
+
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
       if (users[i].key)
