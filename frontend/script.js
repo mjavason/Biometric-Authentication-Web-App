@@ -115,43 +115,47 @@ const api = new ApiHelper(
 
 async function createCredential(registrationData) {
   try {
-    const credentials = await navigator.credentials.create({
-      publicKey: {
-        challenge: Uint8Array.from(registrationData.challenge, (c) =>
-          c.charCodeAt(0)
-        ),
-        rp: {
-          name: 'Biometric Web App',
-          id: 'biometric-authentication-web-app.onrender.com',
+    navigator.credentials
+      .create({
+        publicKey: {
+          challenge: Uint8Array.from(registrationData.challenge, (c) =>
+            c.charCodeAt(0)
+          ),
+          rp: {
+            name: 'Biometric Web App',
+            id: 'biometric-authentication-web-app.onrender.com',
+          },
+          user: {
+            id: Uint8Array.from(registrationData.user.id, (c) =>
+              c.charCodeAt(0)
+            ),
+            name: registrationData.user.email,
+            displayName: registrationData.user.email,
+          },
+          pubKeyCredParams: [
+            { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
+            { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
+            // Add more algorithms as needed
+          ],
+          authenticatorSelection: {
+            // authenticatorAttachment: 'platform',
+            userVerification: 'required',
+          },
+          timeout: 60000,
+          attestation: 'direct',
         },
-        user: {
-          id: Uint8Array.from(registrationData.user.id, (c) => c.charCodeAt(0)),
-          name: registrationData.user.email,
-          displayName: registrationData.user.email,
-        },
-        pubKeyCredParams: [
-          { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
-          { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
-          // Add more algorithms as needed
-        ],
-        authenticatorSelection: {
-          // authenticatorAttachment: 'platform',
-          userVerification: 'required',
-        },
-        timeout: 60000,
-        attestation: 'direct',
-      },
-      // registrationData.publicKeyCredentials,
-    });
-
-    console.log(credentials);
-    await api
-      .post('/set-credential', {
-        email: registrationData.user.email,
-        credentials: credentials,
+        // registrationData.publicKeyCredentials,
       })
-      .then((data) => {
-        window.alert(data.message);
+      .then((credentials) => {
+        console.log(credentials);
+        api
+          .post('/set-credential', {
+            email: registrationData.user.email,
+            credentials,
+          })
+          .then((data) => {
+            window.alert(data.message);
+          });
       });
 
     // window.alert('Logged in successfully ✔✔✔');

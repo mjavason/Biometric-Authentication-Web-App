@@ -89,6 +89,8 @@ app.post('/set-credential', async (req: Request, res: Response) => {
   const email = req.body.email;
   const credentials = req.body.credentials;
 
+  console.log('creds', credentials);
+
   if (!email || !credentials)
     return res
       .status(403)
