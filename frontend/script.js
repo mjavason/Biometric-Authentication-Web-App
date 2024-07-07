@@ -115,7 +115,7 @@ const api = new ApiHelper(
 
 async function createCredential(registrationData) {
   try {
-    const credential = await navigator.credentials.create({
+    const credentials = await navigator.credentials.create({
       publicKey: {
         challenge: Uint8Array.from(registrationData.challenge, (c) =>
           c.charCodeAt(0)
@@ -146,10 +146,10 @@ async function createCredential(registrationData) {
 
     await api.post('/set-credential', {
       email: registrationData.user.email,
-      credential,
+      credentials,
     });
 
-    console.log(credential);
+    console.log(credentials);
     // window.alert('Logged in successfully ✔✔✔');
   } catch (e) {
     window.alert(e.message);
