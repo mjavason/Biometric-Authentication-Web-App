@@ -74,8 +74,8 @@ class ApiHelper {
 
 // Example usage
 const api = new ApiHelper(
-  // 'https://biometric-authentication-backend.onrender.com'
-  'http://localhost:5000'
+  'https://biometric-authentication-backend.onrender.com'
+  // 'http://localhost:5000'
 );
 
 // // GET request example
