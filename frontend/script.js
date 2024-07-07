@@ -135,7 +135,8 @@ async function createCredential(registrationData) {
           // Add more algorithms as needed
         ],
         authenticatorSelection: {
-          authenticatorAttachment: 'cross-platform',
+          // authenticatorAttachment: 'platform',
+          userVerification: 'required',
         },
         timeout: 60000,
         attestation: 'direct',
