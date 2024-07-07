@@ -131,6 +131,14 @@ app.post('/login', async (req: Request, res: Response) => {
     return res.send({ message: 'Successful', data: existingUser });
   }
 });
+
+app.get('/users', async (req: Request, res: Response) => {
+  res.send({
+    success: true,
+    message: 'Users retrieved successfully',
+    data: users,
+  });
+});
 //#endregion code here
 
 //#region Server setup
