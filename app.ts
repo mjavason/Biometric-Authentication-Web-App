@@ -15,19 +15,18 @@ dotenv.config({ path: './.env' });
 //#region keys and configs
 const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
-var database: { users: [{ email: string; id: string; key: any }] } | any = {
-  users: [],
-};
+var users: [{ email: string; id: string; key?: any }] | any = [];
 //#endregion
 
 //#region code here
 function generateRandomNumbers(count: number, min: number, max: number) {
-  const randomNumbers = [];
+  let randomNumbers = [];
   for (let i = 0; i < count; i++) {
     const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
     randomNumbers.push(randomNumber);
   }
-  return randomNumbers;
+
+  return randomNumbers.toString();
 }
 
 function generatePublicKeyCredentials(user: {
@@ -52,25 +51,37 @@ function generatePublicKeyCredentials(user: {
   };
 }
 
-// default message
 app.post('/register/:email', async (req: Request, res: Response) => {
   const user = {
     email: req.params.email,
-    id: generateRandomNumbers(9, 0, 9).toString(),
+    id: generateRandomNumbers(9, 0, 9),
   };
-  database.users.push(user);
+  users.push(user);
 
   return res.send({
     message: 'User registered successfully',
     data: {
       user,
-      publicKeyCredentials: generatePublicKeyCredentials({
-        id: user.id,
-        name: user.email,
-        displayName: user.email,
-      }),
+      challenge: generateRandomNumbers(9, 0, 9),
     },
   });
+});
+
+app.post('/login', async (req: Request, res: Response) => {
+  const { email, credentials } = req.body;
+  let existingUser;
+
+  for (let i = 0; i <= users.length; i++) {
+    if (users[i].email == email) {
+      existingUser = users[i];
+      break;
+    }
+  }
+
+  if (existingUser) {
+    //perform the webauthn check here
+    return res.send({ message: 'Successful', data: existingUser });
+  }
 });
 //#endregion code here
 

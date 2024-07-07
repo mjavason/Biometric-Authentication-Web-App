@@ -5,7 +5,7 @@ class ApiHelper {
     this.baseUrl = baseUrl;
   }
 
-  async get(endpoint) {
+  async get(endpoint = '') {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`);
       return await this.handleResponse(response);
@@ -14,7 +14,7 @@ class ApiHelper {
     }
   }
 
-  async post(endpoint, data) {
+  async post(endpoint = '', data = {}) {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
@@ -29,7 +29,7 @@ class ApiHelper {
     }
   }
 
-  async put(endpoint, data) {
+  async put(endpoint = '', data = {}) {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'PUT',
@@ -44,7 +44,7 @@ class ApiHelper {
     }
   }
 
-  async delete(endpoint) {
+  async delete(endpoint = '') {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'DELETE',
@@ -58,6 +58,7 @@ class ApiHelper {
   async handleResponse(response) {
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('Error', errorData);
       throw new Error(
         `Error: ${response.status} ${response.statusText} - ${errorData.message}`
       );
@@ -66,58 +67,80 @@ class ApiHelper {
   }
 
   handleError(error) {
+    window.alert(error.message);
     console.error('API call failed:', error);
   }
 }
 
 // Example usage
-const api = new ApiHelper('https://jsonplaceholder.typicode.com');
+const api = new ApiHelper(
+  // 'https://biometric-authentication-backend.onrender.com'
+  'http://localhost:5000'
+);
 
-// GET request example
-api.get('/posts/1').then((data) => {
-  console.log('GET response:', data);
-  displayData(data);
-});
+// // GET request example
+// api.get('/posts/1').then((data) => {
+//   console.log('GET response:', data);
+//   displayData(data);
+// });
 
-// POST request example
-const newPost = {
-  title: 'foo',
-  body: 'bar',
-  userId: 1,
-};
-api.post('/posts', newPost).then((data) => {
-  console.log('POST response:', data);
-  displayData(data);
-});
+// // POST request example
+// const newPost = {
+//   title: 'foo',
+//   body: 'bar',
+//   userId: 1,
+// };
+// api.post('/posts', newPost).then((data) => {
+//   console.log('POST response:', data);
+//   displayData(data);
+// });
 
-// PUT request example
-const updatedPost = {
-  id: 1,
-  title: 'foo',
-  body: 'bar',
-  userId: 1,
-};
-api.put('/posts/1', updatedPost).then((data) => {
-  console.log('PUT response:', data);
-  displayData(data);
-});
+// // PUT request example
+// const updatedPost = {
+//   id: 1,
+//   title: 'foo',
+//   body: 'bar',
+//   userId: 1,
+// };
+// api.put('/posts/1', updatedPost).then((data) => {
+//   console.log('PUT response:', data);
+//   displayData(data);
+// });
 
-// DELETE request example
-api.delete('/posts/1').then((data) => {
-  console.log('DELETE response:', data);
-  displayData(data);
-});
+// // DELETE request example
+// api.delete('/posts/1').then((data) => {
+//   console.log('DELETE response:', data);
+//   displayData(data);
+// });
 
-// Function to display data on the page
-function displayData(data) {
-  const output = document.getElementById('output');
-  output.innerHTML = JSON.stringify(data, null, 2);
-}
-
-function createCredential(userEmail) {
+async function createCredential(registrationData) {
   try {
-    const credential = navigator.credentials.create({
-      publicKey: publicKeyCredentialCreationOptions,
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: Uint8Array.from(registrationData.challenge, (c) =>
+          c.charCodeAt(0)
+        ),
+        rp: {
+          name: 'Biometric Web App',
+          id: 'biometric-authentication-web-app.onrender.com',
+        },
+        user: {
+          id: Uint8Array.from(registrationData.user.id, (c) => c.charCodeAt(0)),
+          name: registrationData.user.email,
+          displayName: registrationData.user.email,
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
+          { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
+          // Add more algorithms as needed
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'cross-platform',
+        },
+        timeout: 60000,
+        attestation: 'direct',
+      },
+      // registrationData.publicKeyCredentials,
     });
 
     console.log(credential);
@@ -129,6 +152,12 @@ function createCredential(userEmail) {
 
 registerButton.addEventListener('click', () => {
   let userEmail = emailInput.value;
-  window.alert(`register button clicked. email: ${userEmail}`);
+
+  // POST request example
+  api.post(`/register/${userEmail}`).then((data) => {
+    console.log('POST response:', data);
+    // window.alert(data.message);
+    createCredential(data.data);
+  });
 });
 // createCredential();
