@@ -144,6 +144,7 @@ async function createCredential(registrationData) {
       // registrationData.publicKeyCredentials,
     });
 
+    console.log(credentials);
     await api
       .post('/set-credential', {
         email: registrationData.user.email,
@@ -153,7 +154,6 @@ async function createCredential(registrationData) {
         window.alert(data.message);
       });
 
-    console.log(credentials);
     // window.alert('Logged in successfully ✔✔✔');
   } catch (e) {
     window.alert(e.message);
