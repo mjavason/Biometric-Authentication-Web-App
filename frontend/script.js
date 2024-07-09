@@ -146,10 +146,7 @@ async function createCredential(registrationData) {
 
     console.log(credentials);
     await api
-      .post('/set-credential', {
-        email: registrationData.user.email,
-        credentials: JSON.stringify(credentials),
-      })
+      .post(`/set-credential/:${registrationData.user.email}`, credentials)
       .then((data) => {
         window.alert(data.message);
       });

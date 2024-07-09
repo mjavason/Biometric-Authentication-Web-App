@@ -85,14 +85,11 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   });
 });
 
-app.post('/set-credential', async (req: Request, res: Response) => {
-  const email = req.body.email;
-  const credentials = req.body.credentials;
+app.post('/set-credential/:email', async (req: Request, res: Response) => {
+  console.log('req.body', req.body);
+  const email = req.params.email;
 
-  console.log('creds', credentials);
-  console.log(req.body);
-
-  if (!email || !credentials)
+  if (!email || !req.body)
     return res
       .status(403)
       .send({ successful: false, message: 'email or credentials is missing' });
