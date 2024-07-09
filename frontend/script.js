@@ -113,31 +113,6 @@ const api = new ApiHelper(
 //   displayData(data);
 // });
 
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
-
-function serializePublicKeyCredential(credential) {
-  return {
-    id: credential.id,
-    rawId: arrayBufferToBase64(credential.rawId),
-    type: credential.type,
-    response: {
-      attestationObject: arrayBufferToBase64(
-        credential.response.attestationObject
-      ),
-      clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
-    },
-    clientExtensionResults: credential.getClientExtensionResults(),
-  };
-}
-
 async function createCredential(registrationData) {
   try {
     const credentials = await navigator.credentials.create({
@@ -165,15 +140,26 @@ async function createCredential(registrationData) {
         attestation: 'direct',
       },
     });
-
     console.log(credentials);
 
-    const serializedCredentials = serializePublicKeyCredential(credentials);
+    // decode the clientDataJSON into a utf-8 string
+    const utf8Decoder = new TextDecoder('utf-8');
+    const decodedClientData = utf8Decoder.decode(
+      credentials.response.clientDataJSON
+    );
+
+    // parse the string as an object
+    const clientDataObj = JSON.parse(decodedClientData);
+    console.log(clientDataObj);
 
     await api
       .post(`/set-credential`, {
         email: registrationData.user.email,
-        credentials: serializedCredentials,
+        credentials: {
+          challenge: registrationData.challenge,
+          origin: window.location,
+          type: 'webauthn.create',
+        },
       })
       .then((data) => {
         window.alert(data.message);
