@@ -85,10 +85,9 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   });
 });
 
-app.post('/set-credential/:email', async (req: Request, res: Response) => {
+app.post('/set-credential', async (req: Request, res: Response) => {
   console.log('req.body', req.body);
-  const email = req.params.email;
-  const credentials = req.body;
+  const { credentials, email } = req.body;
 
   if (!email || !credentials)
     return res

@@ -171,7 +171,8 @@ async function createCredential(registrationData) {
     const serializedCredentials = serializePublicKeyCredential(credentials);
 
     await api
-      .post(`/set-credential/${registrationData.user.email}`, {
+      .post(`/set-credential`, {
+        email: registrationData.user.email,
         credentials: serializedCredentials,
       })
       .then((data) => {
