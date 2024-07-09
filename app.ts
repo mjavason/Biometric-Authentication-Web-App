@@ -4,6 +4,7 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import CBOR from 'cbor-js';
 
 //#region app setup
 const app = express();

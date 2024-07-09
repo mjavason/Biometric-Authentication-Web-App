@@ -158,10 +158,28 @@ async function createCredential(registrationData) {
 
     console.log(decodedAttestationObj);
 
+    const { authData } = credentials.decodedAttestationObj;
+
+    // get the length of the credential ID
+    const dataView = new DataView(new ArrayBuffer(2));
+    const idLenBytes = authData.slice(53, 55);
+    idLenBytes.forEach((value, index) => dataView.setUint8(index, value));
+    const credentialIdLength = dataView.getUint16(0);
+
+    // get the credential ID
+    const credentialId = authData.slice(55, 55 + credentialIdLength);
+
+    // get the public key object
+    const publicKeyBytes = authData.slice(55 + credentialIdLength);
+
+    // the publicKeyBytes are encoded again as CBOR
+    const publicKeyObject = CBOR.decode(publicKeyBytes.buffer);
+    console.log(publicKeyObject);
+
     await api
       .post(`/set-credential`, {
         email: registrationData.user.email,
-        credentials: { clientDataObj, decodedAttestationObj },
+        credentials: { credentialId, publicKeyBytes },
       })
       .then((data) => {
         window.alert(data.message);
