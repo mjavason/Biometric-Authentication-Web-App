@@ -158,7 +158,7 @@ async function createCredential(registrationData) {
 
     console.log(decodedAttestationObj);
 
-    const { authData } = credentials.decodedAttestationObj;
+    const { authData } = decodedAttestationObj;
 
     // get the length of the credential ID
     const dataView = new DataView(new ArrayBuffer(2));
