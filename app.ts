@@ -67,11 +67,11 @@ app.post('/register/:email', async (req: Request, res: Response) => {
     }
   }
 
-  if (existingUser) {
-    return res
-      .status(403)
-      .send({ success: false, message: 'User email already exists' });
-  }
+  // if (existingUser) {
+  //   return res
+  //     .status(403)
+  //     .send({ success: false, message: 'User email already exists' });
+  // }
 
   users.push(user);
   console.log(users);

@@ -153,7 +153,7 @@ async function createCredential(registrationData) {
     console.log(clientDataObj);
 
     const decodedAttestationObj = CBOR.decode(
-      credential.response.attestationObject
+      credentials.response.attestationObject
     );
 
     console.log(decodedAttestationObj);
