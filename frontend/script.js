@@ -144,10 +144,13 @@ async function createCredential(registrationData) {
       // registrationData.publicKeyCredentials,
     });
 
-    console.log(credentials.publicKeyCredential);
+    console.log(credentials);
+    const credentialString = JSON.stringify(credentials);
+    console.log(credentialString);
+    const credentialConverted = JSON.parse(credentialString);
     await api
       .post(`/set-credential/${registrationData.user.email}`, {
-        credentials: { a: 'b', c: 'd' },
+        credentials: credentialConverted,
       })
       .then((data) => {
         window.alert(data.message);
