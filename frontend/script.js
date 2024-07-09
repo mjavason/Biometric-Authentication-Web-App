@@ -113,6 +113,31 @@ const api = new ApiHelper(
 //   displayData(data);
 // });
 
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function serializePublicKeyCredential(credential) {
+  return {
+    id: credential.id,
+    rawId: arrayBufferToBase64(credential.rawId),
+    type: credential.type,
+    response: {
+      attestationObject: arrayBufferToBase64(
+        credential.response.attestationObject
+      ),
+      clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+    },
+    clientExtensionResults: credential.getClientExtensionResults(),
+  };
+}
+
 async function createCredential(registrationData) {
   try {
     const credentials = await navigator.credentials.create({
@@ -132,25 +157,22 @@ async function createCredential(registrationData) {
         pubKeyCredParams: [
           { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
           { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
-          // Add more algorithms as needed
         ],
         authenticatorSelection: {
-          // authenticatorAttachment: 'platform',
           userVerification: 'required',
         },
         timeout: 60000,
         attestation: 'direct',
       },
-      // registrationData.publicKeyCredentials,
     });
 
     console.log(credentials);
-    const credentialString = JSON.stringify(credentials);
-    console.log(credentialString);
-    const credentialConverted = JSON.parse(credentialString);
+
+    const serializedCredentials = serializePublicKeyCredential(credentials);
+
     await api
       .post(`/set-credential/${registrationData.user.email}`, {
-        credentials: credentialConverted,
+        credentials: serializedCredentials,
       })
       .then((data) => {
         window.alert(data.message);
