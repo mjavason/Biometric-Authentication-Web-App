@@ -88,8 +88,9 @@ app.post('/register/:email', async (req: Request, res: Response) => {
 app.post('/set-credential/:email', async (req: Request, res: Response) => {
   console.log('req.body', req.body);
   const email = req.params.email;
+  const credentials = req.body;
 
-  if (!email || !req.body)
+  if (!email || !credentials)
     return res
       .status(403)
       .send({ successful: false, message: 'email or credentials is missing' });
