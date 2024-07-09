@@ -152,14 +152,16 @@ async function createCredential(registrationData) {
     const clientDataObj = JSON.parse(decodedClientData);
     console.log(clientDataObj);
 
+    const decodedAttestationObj = CBOR.decode(
+      credential.response.attestationObject
+    );
+
+    console.log(decodedAttestationObj);
+
     await api
       .post(`/set-credential`, {
         email: registrationData.user.email,
-        credentials: {
-          challenge: registrationData.challenge,
-          origin: window.location,
-          type: 'webauthn.create',
-        },
+        credentials: { clientDataObj, decodedAttestationObj },
       })
       .then((data) => {
         window.alert(data.message);
