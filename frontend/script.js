@@ -161,12 +161,13 @@ async function getCredential(email) {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
     console.log(userInfo);
+    const { user, challenge } = userInfo;
 
     const publicKeyCredentialRequestOptions = {
-      challenge: Uint8Array.from(userInfo.challenge, (c) => c.charCodeAt(0)),
+      challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          id: Uint8Array.from(credentialId, (c) => c.charCodeAt(0)),
+          id: Uint8Array.from(user.credentials.credentialId, (c) => c.charCodeAt(0)),
           type: 'public-key',
           // transports: ['usb', 'ble', 'nfc'],
         },
