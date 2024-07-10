@@ -161,7 +161,7 @@ async function getCredential(email) {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
     console.log(userInfo);
-    const { user, challenge } = userInfo;
+    const { user, challenge } = userInfo.data;
 
     const publicKeyCredentialRequestOptions = {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
