@@ -146,6 +146,7 @@ async function createCredential(registrationData) {
         credentials: { credentialId, publicKeyBytes },
       })
       .then((data) => {
+        if (!data) return;
         window.alert(data.message);
       });
 
