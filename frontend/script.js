@@ -169,10 +169,10 @@ async function getCredential(email) {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          // id: Uint8Array.from(user.credentials.credentialId, (c) =>
-          //   c.charCodeAt(0)
-          // ),
-          // type: 'public-key',
+          id: Uint8Array.from(user.credentials.credentialId, (c) =>
+            c.charCodeAt(0)
+          ),
+          type: 'public-key',
           // transports: ['usb', 'ble', 'nfc'],
         },
       ],
