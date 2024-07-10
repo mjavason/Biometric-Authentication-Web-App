@@ -73,8 +73,8 @@ class ApiHelper {
   }
 }
 const api = new ApiHelper(
-  // 'https://biometric-authentication-backend.onrender.com'
-  'http://localhost:5000'
+  'https://biometric-authentication-backend.onrender.com'
+  // 'http://localhost:5000'
 );
 
 async function createCredential(registrationData) {
