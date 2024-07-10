@@ -172,7 +172,7 @@ async function getCredential(email) {
           ),
           type: 'public-key',
           userVerification: 'required',
-          transports: ['usb', 'ble', 'nfc'],
+          // transports: ['usb', 'ble', 'nfc'],
         },
       ],
       timeout: 60000,
