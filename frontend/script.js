@@ -170,7 +170,7 @@ async function getCredential(email) {
           id: Uint8Array.from(user.credentials.credentialId, (c) =>
             c.charCodeAt(0)
           ),
-          type: 'public-key',
+          // type: 'public-key',
           userVerification: 'required',
           // transports: ['usb', 'ble', 'nfc'],
         },
