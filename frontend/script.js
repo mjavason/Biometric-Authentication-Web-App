@@ -157,7 +157,7 @@ async function createCredential(registrationData) {
 
 async function getCredential(email) {
   try {
-    const userInfo = await api.get(`/get-credential/:${email}`);
+    const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
 
     const publicKeyCredentialRequestOptions = {

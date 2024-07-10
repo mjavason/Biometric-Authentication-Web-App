@@ -18,7 +18,7 @@ dotenv.config({ path: './.env' });
 //#region keys and configs
 const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
-var users: [{ email: string; id: string; key?: any }] | any = [];
+var users: { email: string; id: string; credentials?: any }[] = [];
 //#endregion
 
 //#region code here
@@ -99,13 +99,13 @@ app.post('/set-credential', async (req: Request, res: Response) => {
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
-      if (users[i].key)
+      if (users[i].credentials)
         return res.status(403).send({
           successful: false,
           message: 'Registration already complete. Try logging in',
         });
 
-      users[i].key = credentials;
+      users[i].credentials = credentials;
       return res.send({
         successful: true,
         message: 'Registration complete. Now try logging in',
@@ -124,7 +124,7 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
-      if (!users[i].key) break;
+      if (!users[i].credentials) break;
       return res.send({
         success: true,
         message: 'User credentials retrieved successfully',
