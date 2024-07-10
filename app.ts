@@ -23,13 +23,15 @@ var users: [{ email: string; id: string; key?: any }] | any = [];
 
 //#region code here
 function generateRandomNumbers(count: number, min: number, max: number) {
-  let randomNumbers = [];
+  let randomNumbers: string = '';
   for (let i = 0; i < count; i++) {
-    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-    randomNumbers.push(randomNumber);
+    const randomNumber = (
+      Math.floor(Math.random() * (max - min + 1)) + min
+    ).toString();
+    randomNumbers = randomNumbers.concat(randomNumber);
   }
 
-  return randomNumbers.toString();
+  return randomNumbers;
 }
 
 function generatePublicKeyCredentials(user: {
@@ -114,6 +116,26 @@ app.post('/set-credential', async (req: Request, res: Response) => {
   return res
     .status(404)
     .send({ success: false, message: 'User email does not exist' });
+});
+
+app.get('/get-credential/:email', async (req: Request, res: Response) => {
+  let email = req.params.email;
+  let challenge = generateRandomNumbers(9, 0, 9);
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].email == email) {
+      if (!users[i].key) break;
+      return res.send({
+        success: true,
+        message: 'User credentials retrieved successfully',
+        data: { user: users[i], challenge },
+      });
+    }
+  }
+
+  return res
+    .status(404)
+    .send({ success: false, message: 'User does not exist' });
 });
 
 app.post('/login', async (req: Request, res: Response) => {

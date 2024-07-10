@@ -1,4 +1,5 @@
 const registerButton = document.getElementById('registerBtn');
+const loginButton = document.getElementById('loginBtn');
 const emailInput = document.getElementById('emailInput');
 class ApiHelper {
   constructor(baseUrl) {
@@ -71,47 +72,10 @@ class ApiHelper {
     console.error('API call failed:', error);
   }
 }
-
-// Example usage
 const api = new ApiHelper(
   // 'https://biometric-authentication-backend.onrender.com'
   'http://localhost:5000'
 );
-
-// // GET request example
-// api.get('/posts/1').then((data) => {
-//   console.log('GET response:', data);
-//   displayData(data);
-// });
-
-// // POST request example
-// const newPost = {
-//   title: 'foo',
-//   body: 'bar',
-//   userId: 1,
-// };
-// api.post('/posts', newPost).then((data) => {
-//   console.log('POST response:', data);
-//   displayData(data);
-// });
-
-// // PUT request example
-// const updatedPost = {
-//   id: 1,
-//   title: 'foo',
-//   body: 'bar',
-//   userId: 1,
-// };
-// api.put('/posts/1', updatedPost).then((data) => {
-//   console.log('PUT response:', data);
-//   displayData(data);
-// });
-
-// // DELETE request example
-// api.delete('/posts/1').then((data) => {
-//   console.log('DELETE response:', data);
-//   displayData(data);
-// });
 
 async function createCredential(registrationData) {
   try {
@@ -191,6 +155,31 @@ async function createCredential(registrationData) {
   }
 }
 
+async function getCredential(email) {
+  try {
+    const userInfo = await api.get(`/get-credential/:${email}`);
+    if (!userInfo) return;
+
+    const publicKeyCredentialRequestOptions = {
+      challenge: Uint8Array.from(userInfo.challenge, (c) => c.charCodeAt(0)),
+      allowCredentials: [
+        {
+          id: Uint8Array.from(credentialId, (c) => c.charCodeAt(0)),
+          type: 'public-key',
+          // transports: ['usb', 'ble', 'nfc'],
+        },
+      ],
+      timeout: 60000,
+    };
+
+    const assertion = await navigator.credentials.get({
+      publicKey: publicKeyCredentialRequestOptions,
+    });
+  } catch (e) {
+    window.alert(e.message);
+  }
+}
+
 registerButton.addEventListener('click', () => {
   let userEmail = emailInput.value;
 
@@ -201,4 +190,11 @@ registerButton.addEventListener('click', () => {
     createCredential(data.data);
   });
 });
+
+loginButton.addEventListener('click', () => {
+  let userEmail = emailInput.value;
+
+  getCredential(userEmail);
+});
+
 // createCredential();
