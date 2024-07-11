@@ -187,10 +187,12 @@ async function getCredential(email) {
     });
 
     console.log('Assertion:', assertion);
+    const utf8Decoder = new TextDecoder('utf-8');
+    const decodedAssertion = utf8Decoder.decode(assertion);
 
     let login = await api.post('/login', {
       email: user.email,
-      credential: assertion,
+      credential: decodedAssertion,
     });
     if (!login) return;
 

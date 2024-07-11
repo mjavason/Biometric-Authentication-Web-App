@@ -4,7 +4,7 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import CBOR from 'cbor-js';
+import crypto from 'crypto';
 
 //#region app setup
 const app = express();
@@ -54,6 +54,59 @@ function generatePublicKeyCredentials(user: {
     timeout: 60000,
     attestation: 'direct',
   };
+}
+
+// Function to convert ArrayBuffer to Buffer
+function arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
+  return Buffer.from(new Uint8Array(arrayBuffer));
+}
+
+// Function to verify the signature
+async function verifySignature(
+  publicKey: string,
+  signature: Buffer,
+  signedData: Buffer
+) {
+  const verify = crypto.createVerify('SHA256');
+  verify.update(signedData);
+  verify.end();
+  return verify.verify(publicKey, signature);
+}
+
+// Example function to handle the verification
+async function handleVerification(
+  authenticatorData: ArrayBuffer,
+  clientDataJSON: ArrayBuffer,
+  signature: ArrayBuffer,
+  publicKeyBytes: any
+) {
+  // Convert ArrayBuffers to Buffers
+  const authenticatorDataBuffer = arrayBufferToBuffer(authenticatorData);
+  const clientDataJSONBuffer = arrayBufferToBuffer(clientDataJSON);
+  const signatureBuffer = arrayBufferToBuffer(signature);
+
+  // Hash the clientDataJSON
+  const hashedClientDataJSON = crypto
+    .createHash('SHA256')
+    .update(clientDataJSONBuffer)
+    .digest();
+
+  // Concatenate authenticatorData and hashedClientDataJSON
+  const signedData = Buffer.concat([
+    authenticatorDataBuffer,
+    hashedClientDataJSON,
+  ]);
+
+  // Verify the signature
+  const signatureIsValid = await verifySignature(
+    publicKeyBytes,
+    signatureBuffer,
+    signedData
+  );
+
+  if (signatureIsValid) return true; // return 'Hooray! User is authenticated! 🎉';
+
+  return false; // return 'Verification failed. 😭';
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
@@ -125,7 +178,7 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
       if (!users[i].credentials) {
-        users.splice(i)
+        users.splice(i);
         break;
       }
       return res.send({
@@ -142,7 +195,7 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
 });
 
 app.post('/login', async (req: Request, res: Response) => {
-  const { email, credentials } = req.body;
+  const { email, credential } = req.body;
   let existingUser;
 
   for (let i = 0; i < users.length; i++) {
@@ -152,10 +205,31 @@ app.post('/login', async (req: Request, res: Response) => {
     }
   }
 
+  //perform the webauthn check here
   if (existingUser) {
-    //perform the webauthn check here
-    return res.send({ message: 'Successful', data: existingUser });
+    const { authenticatorData, clientDataJSON, signature } = credential;
+    const signatureIsValid = await handleVerification(
+      authenticatorData,
+      clientDataJSON,
+      signature,
+      existingUser
+    );
+
+    if (signatureIsValid) {
+      return 'Hooray! User is authenticated! 🎉';
+    } else {
+      return 'Verification failed. 😭';
+    }
+    return res.send({
+      success: true,
+      message: 'Successful',
+      data: existingUser,
+    });
   }
+
+  return res
+    .status(404)
+    .send({ success: false, message: 'User email does not exist' });
 });
 
 app.get('/users', async (req: Request, res: Response) => {
@@ -206,6 +280,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
 
   console.log(`${'\x1b[31m'}${err.message}${'\x1b][0m]'}`);
+  console.log(err);
   return res
     .status(500)
     .send({ success: false, status: 500, message: err.message });
