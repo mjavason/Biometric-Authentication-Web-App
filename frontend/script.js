@@ -166,13 +166,14 @@ async function getCredential(email) {
     const { credentialId, publicKeyBytes } = user.credentials;
     console.log('Credential ID:', credentialId);
 
+    // Convert the credentialId object to a Uint8Array
+    const credentialIdArray = new Uint8Array(Object.values(credentialId));
+
     const publicKeyCredentialRequestOptions = {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          id: Uint8Array.from(atob(user.credentials.credentialId), (c) =>
-            c.charCodeAt(0)
-          ),
+          id: credentialIdArray,
           type: 'public-key',
           // transports: ['usb', 'ble', 'nfc'],
         },
