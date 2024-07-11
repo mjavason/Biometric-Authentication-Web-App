@@ -182,18 +182,29 @@ async function getCredential(email) {
       userVerification: 'required',
     };
 
-    const assertion = await navigator.credentials.get({
+    const credential = await navigator.credentials.get({
       publicKey: publicKeyCredentialRequestOptions,
     });
 
-    console.log('Assertion.response:', assertion.response);
-    const utf8Decoder = new TextDecoder('utf-8');
+    console.log('Assertion.response:', credential.response);
+
+    // Encode the credential.
+    const rawId = base64url.encode(credential.rawId);
+    const authenticatorData = base64url.encode(
+      credential.response.authenticatorData
+    );
+    const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
+    const signature = base64url.encode(credential.response.signature);
+    const userHandle = credential.response.userHandle
+      ? base64url.encode(credential.response.userHandle)
+      : undefined;
+
     const decodedAssertion = {
-      authenticatorData: utf8Decoder.decode(
-        assertion.response.authenticatorData
-      ),
-      clientDataJSON: utf8Decoder.decode(assertion.response.clientDataJSON),
-      signature: utf8Decoder.decode(assertion.response.signature),
+      rawId,
+      authenticatorData,
+      clientDataJSON,
+      signature,
+      userHandle,
     };
 
     let login = await api.post('/login', {

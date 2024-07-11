@@ -216,18 +216,23 @@ app.post('/login', async (req: Request, res: Response) => {
   if (existingUser) {
     const { authenticatorData, clientDataJSON, signature } = credential;
     const signatureIsValid = await handleVerification(
-      authenticatorData,
-      clientDataJSON,
-      signature,
-      existingUser.credentials.publicKeyBytes
+      stringToArrayBuffer(authenticatorData),
+      stringToArrayBuffer(clientDataJSON),
+      stringToArrayBuffer(signature),
+      existingUser.credentials.publicKeyBytes.toString()
     );
 
     if (signatureIsValid) {
-      return 'Hooray! User is authenticated! 🎉';
-    } else {
       return res.send({
         success: true,
         message: 'Logged in successfully',
+        data: existingUser,
+      });
+      // return 'Hooray! User is authenticated! 🎉';
+    } else {
+      return res.status(403).send({
+        success: false,
+        message: 'Authentication failed',
         data: existingUser,
       });
       // return 'Verification failed. 😭';
@@ -285,8 +290,7 @@ app.listen(PORT, async () => {
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
-
-  console.log(`${'\x1b[31m'}${err.message}${'\x1b][0m]'}`);
+  console.log(`${'\x1b[31m'}${err.message} ${'\x1b][0m]'}`);
   // console.log(err);
   return res
     .status(500)
