@@ -124,7 +124,10 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
-      if (!users[i].credentials) break;
+      if (!users[i].credentials) {
+        users.splice(i)
+        break;
+      }
       return res.send({
         success: true,
         message: 'User credentials retrieved successfully',
@@ -135,7 +138,7 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
 
   return res
     .status(404)
-    .send({ success: false, message: 'User does not exist' });
+    .send({ success: false, message: 'User does not exist. Please register' });
 });
 
 app.post('/login', async (req: Request, res: Response) => {

@@ -86,7 +86,7 @@ async function createCredential(registrationData) {
         ),
         rp: {
           name: 'Biometric Web App',
-          id: 'biometric-authentication-web-app.onrender.com',
+          id: window.location.hostname, // Dynamically use the current hostname
         },
         user: {
           id: Uint8Array.from(registrationData.user.id, (c) => c.charCodeAt(0)),
@@ -104,7 +104,7 @@ async function createCredential(registrationData) {
         attestation: 'direct',
       },
     });
-    console.log(credentials);
+    console.log('Credentials:', credentials);
 
     // decode the clientDataJSON into a utf-8 string
     const utf8Decoder = new TextDecoder('utf-8');
@@ -114,13 +114,13 @@ async function createCredential(registrationData) {
 
     // parse the string as an object
     const clientDataObj = JSON.parse(decodedClientData);
-    console.log(clientDataObj);
+    console.log('Client Data Object:', clientDataObj);
 
     const decodedAttestationObj = CBOR.decode(
       credentials.response.attestationObject
     );
 
-    console.log(decodedAttestationObj);
+    console.log('Decoded Attestation Object:', decodedAttestationObj);
 
     const { authData } = decodedAttestationObj;
 
@@ -138,7 +138,7 @@ async function createCredential(registrationData) {
 
     // the publicKeyBytes are encoded again as CBOR
     const publicKeyObject = CBOR.decode(publicKeyBytes.buffer);
-    console.log(publicKeyObject);
+    console.log('Public Key Object:', publicKeyObject);
 
     await api
       .post(`/set-credential`, {
@@ -152,6 +152,7 @@ async function createCredential(registrationData) {
 
     // window.alert('Logged in successfully ✔✔✔');
   } catch (e) {
+    console.error('Error creating credential:', e);
     window.alert(e.message);
   }
 }
@@ -160,16 +161,16 @@ async function getCredential(email) {
   try {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
-    console.log(userInfo);
+    console.log('User Info:', userInfo);
     const { user, challenge } = userInfo.data;
     const { credentialId, publicKeyBytes } = user.credentials;
-    console.log('credentialId', credentialId);
+    console.log('Credential ID:', credentialId);
 
     const publicKeyCredentialRequestOptions = {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          id: Uint8Array.from(user.credentials.credentialId, (c) =>
+          id: Uint8Array.from(atob(user.credentials.credentialId), (c) =>
             c.charCodeAt(0)
           ),
           type: 'public-key',
@@ -177,12 +178,16 @@ async function getCredential(email) {
         },
       ],
       timeout: 60000,
+      userVerification: 'required',
     };
 
     const assertion = await navigator.credentials.get({
       publicKey: publicKeyCredentialRequestOptions,
     });
+
+    console.log('Assertion:', assertion);
   } catch (e) {
+    console.error('Error getting credential:', e);
     window.alert(e.message);
   }
 }
