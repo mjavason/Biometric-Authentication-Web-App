@@ -50,4 +50,3 @@ const decode = function (base64) {
 };
 
 const base64url = { encode, decode };
-export { base64url };

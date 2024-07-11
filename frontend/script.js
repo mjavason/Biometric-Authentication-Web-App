@@ -186,8 +186,6 @@ async function getCredential(email) {
       publicKey: publicKeyCredentialRequestOptions,
     });
 
-    console.log('Assertion.response:', credential.response);
-
     // Encode the credential.
     const rawId = base64url.encode(credential.rawId);
     const authenticatorData = base64url.encode(
