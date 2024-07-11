@@ -104,23 +104,23 @@ async function createCredential(registrationData) {
         attestation: 'direct',
       },
     });
-    console.log('Credentials:', credentials);
+    // console.log('Credentials:', credentials);
 
     // decode the clientDataJSON into a utf-8 string
-    const utf8Decoder = new TextDecoder('utf-8');
-    const decodedClientData = utf8Decoder.decode(
-      credentials.response.clientDataJSON
-    );
+    // const utf8Decoder = new TextDecoder('utf-8');
+    // const decodedClientData = utf8Decoder.decode(
+    //   credentials.response.clientDataJSON
+    // );
 
     // parse the string as an object
-    const clientDataObj = JSON.parse(decodedClientData);
-    console.log('Client Data Object:', clientDataObj);
+    // const clientDataObj = JSON.parse(decodedClientData);
+    // console.log('Client Data Object:', clientDataObj);
 
     const decodedAttestationObj = CBOR.decode(
       credentials.response.attestationObject
     );
 
-    console.log('Decoded Attestation Object:', decodedAttestationObj);
+    // console.log('Decoded Attestation Object:', decodedAttestationObj);
 
     const { authData } = decodedAttestationObj;
 
@@ -137,8 +137,8 @@ async function createCredential(registrationData) {
     const publicKeyBytes = authData.slice(55 + credentialIdLength);
 
     // the publicKeyBytes are encoded again as CBOR
-    const publicKeyObject = CBOR.decode(publicKeyBytes.buffer);
-    console.log('Public Key Object:', publicKeyObject);
+    // const publicKeyObject = CBOR.decode(publicKeyBytes.buffer);
+    // console.log('Public Key Object:', publicKeyObject);
 
     await api
       .post(`/set-credential`, {
@@ -161,10 +161,10 @@ async function getCredential(email) {
   try {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
-    console.log('User Info:', userInfo);
+    // console.log('User Info:', userInfo);
     const { user, challenge } = userInfo.data;
     const { credentialId, publicKeyBytes } = user.credentials;
-    console.log('Credential ID:', credentialId);
+    // console.log('Credential ID:', credentialId);
 
     // Convert the credentialId object to a Uint8Array
     const credentialIdArray = new Uint8Array(Object.values(credentialId));

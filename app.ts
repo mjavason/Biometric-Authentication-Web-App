@@ -34,6 +34,11 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
+function stringToArrayBuffer(str: string): ArrayBuffer {
+  const encoder = new TextEncoder();
+  return encoder.encode(str).buffer;
+}
+
 function generatePublicKeyCredentials(user: {
   id: string;
   name: string;
@@ -214,7 +219,7 @@ app.post('/login', async (req: Request, res: Response) => {
       authenticatorData,
       clientDataJSON,
       signature,
-      existingUser
+      existingUser.credentials.publicKeyBytes
     );
 
     if (signatureIsValid) {
