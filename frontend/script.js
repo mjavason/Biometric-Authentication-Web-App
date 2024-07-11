@@ -185,6 +185,7 @@ async function getCredential(email) {
     const credential = await navigator.credentials.get({
       publicKey: publicKeyCredentialRequestOptions,
     });
+    console.log('assertion', credential);
 
     // Encode the credential.
     const rawId = base64url.encode(credential.rawId);

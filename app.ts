@@ -4,7 +4,7 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import crypto from 'crypto';
+import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 
 //#region app setup
 const app = express();
@@ -39,79 +39,9 @@ function stringToArrayBuffer(str: string): ArrayBuffer {
   return encoder.encode(str).buffer;
 }
 
-function generatePublicKeyCredentials(user: {
-  id: string;
-  name: string;
-  displayName: string;
-}) {
-  return {
-    challenge: generateRandomNumbers(32, 0, 9), // Should be replaced with a real challenge from your server
-    rp: {
-      name: 'Biometric Web App',
-      id: 'biometric-authentication-web-app.onrender.com',
-    },
-    user,
-    pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-    authenticatorSelection: {
-      // authenticatorAttachment: 'platform',
-      userVerification: 'preferred',
-    },
-    timeout: 60000,
-    attestation: 'direct',
-  };
-}
-
 // Function to convert ArrayBuffer to Buffer
 function arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
   return Buffer.from(new Uint8Array(arrayBuffer));
-}
-
-// Function to verify the signature
-async function verifySignature(
-  publicKey: string,
-  signature: Buffer,
-  signedData: Buffer
-) {
-  const verify = crypto.createVerify('SHA256');
-  verify.update(signedData);
-  verify.end();
-  return verify.verify(publicKey, signature);
-}
-
-// Example function to handle the verification
-async function handleVerification(
-  authenticatorData: ArrayBuffer,
-  clientDataJSON: ArrayBuffer,
-  signature: ArrayBuffer,
-  publicKeyBytes: any
-) {
-  // Convert ArrayBuffers to Buffers
-  const authenticatorDataBuffer = arrayBufferToBuffer(authenticatorData);
-  const clientDataJSONBuffer = arrayBufferToBuffer(clientDataJSON);
-  const signatureBuffer = arrayBufferToBuffer(signature);
-
-  // Hash the clientDataJSON
-  const hashedClientDataJSON = crypto
-    .createHash('SHA256')
-    .update(clientDataJSONBuffer)
-    .digest();
-
-  // Concatenate authenticatorData and hashedClientDataJSON
-  const signedData = Buffer.concat([
-    authenticatorDataBuffer,
-    hashedClientDataJSON,
-  ]);
-
-  // Verify the signature
-  const signatureIsValid = await verifySignature(
-    publicKeyBytes,
-    signatureBuffer,
-    signedData
-  );
-
-  if (signatureIsValid) return true; // return 'Hooray! User is authenticated! 🎉';
-
-  return false; // return 'Verification failed. 😭';
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
@@ -214,15 +144,27 @@ app.post('/login', async (req: Request, res: Response) => {
 
   //perform the webauthn check here
   if (existingUser) {
-    const { authenticatorData, clientDataJSON, signature } = credential;
-    const signatureIsValid = await handleVerification(
-      stringToArrayBuffer(authenticatorData),
-      stringToArrayBuffer(clientDataJSON),
-      stringToArrayBuffer(signature),
-      existingUser.credentials.publicKeyBytes.toString()
-    );
+    let verified = true;
 
-    if (signatureIsValid) {
+    // const { authenticatorData, clientDataJSON, signature } = credential;
+
+    // // const verification = await verifyAuthenticationResponse({
+    // //   // credential: claimedCred,
+    // //   // expectedChallenge,
+    // //   // expectedOrigin,
+    // //   // expectedRPID,
+    // //   // authenticator,
+    // //   // userDevicePublicKeys,
+    // // });
+
+    // const { verified, authenticationInfo } = verification;
+    // const { extensionOutputs } = authenticationInfo;
+
+    // if (!verified) {
+    //   throw new Error('User verification failed.');
+    // }
+
+    if (verified) {
       return res.send({
         success: true,
         message: 'Logged in successfully',
