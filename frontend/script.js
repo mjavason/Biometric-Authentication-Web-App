@@ -187,6 +187,14 @@ async function getCredential(email) {
     });
 
     console.log('Assertion:', assertion);
+
+    let login = await api.post('/login', {
+      email: user.email,
+      credential: assertion,
+    });
+    if (!login) return;
+
+    window.alert(login.message);
   } catch (e) {
     console.error('Error getting credential:', e);
     window.alert(e.message);
