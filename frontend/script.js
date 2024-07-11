@@ -188,7 +188,7 @@ async function getCredential(email) {
 
     console.log('Assertion.response:', assertion.response);
     const utf8Decoder = new TextDecoder('utf-8');
-    const decodedAssertion = utf8Decoder.decode(assertion.response);
+    const decodedAssertion = utf8Decoder.decode(assertion.response.clientDataJSON);
 
     let login = await api.post('/login', {
       email: user.email,
