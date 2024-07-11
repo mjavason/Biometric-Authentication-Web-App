@@ -218,13 +218,13 @@ app.post('/login', async (req: Request, res: Response) => {
     if (signatureIsValid) {
       return 'Hooray! User is authenticated! 🎉';
     } else {
-      return 'Verification failed. 😭';
+      return res.send({
+        success: true,
+        message: 'Logged in successfully',
+        data: existingUser,
+      });
+      // return 'Verification failed. 😭';
     }
-    return res.send({
-      success: true,
-      message: 'Successful',
-      data: existingUser,
-    });
   }
 
   return res

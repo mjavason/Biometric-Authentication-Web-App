@@ -186,7 +186,7 @@ async function getCredential(email) {
       publicKey: publicKeyCredentialRequestOptions,
     });
 
-    console.log('Assertion:', assertion);
+    console.log('Assertion.response:', assertion.response);
     const utf8Decoder = new TextDecoder('utf-8');
     const decodedAssertion = utf8Decoder.decode(assertion.response);
 
