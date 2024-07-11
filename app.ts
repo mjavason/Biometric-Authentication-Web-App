@@ -198,6 +198,8 @@ app.post('/login', async (req: Request, res: Response) => {
   const { email, credential } = req.body;
   let existingUser;
 
+  console.log('credential', credential);
+
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
       existingUser = users[i];
@@ -280,7 +282,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
 
   console.log(`${'\x1b[31m'}${err.message}${'\x1b][0m]'}`);
-  console.log(err);
+  // console.log(err);
   return res
     .status(500)
     .send({ success: false, status: 500, message: err.message });
