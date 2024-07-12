@@ -161,11 +161,9 @@ async function getCredential(email) {
   try {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
-    // console.log('User Info:', userInfo);
+
     const { user, challenge } = userInfo.data;
     const { credentialId, publicKeyBytes } = user.credentials;
-    // console.log('Credential ID:', credentialId);
-
     // Convert the credentialId object to a Uint8Array
     const credentialIdArray = new Uint8Array(Object.values(credentialId));
 
@@ -188,6 +186,7 @@ async function getCredential(email) {
     console.log('assertion', credential);
 
     // Encode the credential.
+    const encodedCredential = base64url.encode(credential);
     const rawId = base64url.encode(credential.rawId);
     const authenticatorData = base64url.encode(
       credential.response.authenticatorData
@@ -208,7 +207,7 @@ async function getCredential(email) {
 
     let login = await api.post('/login', {
       email: user.email,
-      credential: decodedAssertion,
+      credential: encodedCredential,
     });
     if (!login) return;
 

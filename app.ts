@@ -146,16 +146,16 @@ app.post('/login', async (req: Request, res: Response) => {
   if (existingUser) {
     let verified = true;
 
-    // const { authenticatorData, clientDataJSON, signature } = credential;
+    const { authenticatorData, clientDataJSON, signature } = credential;
 
-    // // const verification = await verifyAuthenticationResponse({
-    // //   // credential: claimedCred,
-    // //   // expectedChallenge,
-    // //   // expectedOrigin,
-    // //   // expectedRPID,
-    // //   // authenticator,
-    // //   // userDevicePublicKeys,
-    // // });
+    // const verification = await verifyAuthenticationResponse({
+    // credential: claimedCred,
+    // expectedChallenge,
+    // expectedOrigin,
+    // expectedRPID,
+    // authenticator,
+    // userDevicePublicKeys,
+    // });
 
     // const { verified, authenticationInfo } = verification;
     // const { extensionOutputs } = authenticationInfo;
