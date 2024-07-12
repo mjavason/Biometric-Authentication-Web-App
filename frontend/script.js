@@ -186,7 +186,6 @@ async function getCredential(email) {
     console.log('assertion', credential);
 
     // Encode the credential.
-    const rawId = base64url.encode(credential.rawId);
     const authenticatorData = base64url.encode(
       credential.response.authenticatorData
     );
@@ -204,13 +203,12 @@ async function getCredential(email) {
 
     const decodedAssertion = {
       id: credential.id,
-      rawId,
+      rawId: credential.rawId,
+      type: credential.type,
       authenticatorData,
       clientDataJSON,
-      clientDataJSONUtf8: decodedClientData,
       signature,
       userHandle,
-      type: credential.type,
     };
 
     let login = await api.post('/login', {

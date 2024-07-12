@@ -156,12 +156,8 @@ app.post('/login', async (req: Request, res: Response) => {
       type,
     } = credential;
 
-    const authenticatorDataDecoded = base64url.decode(authenticatorData);
     const clientDataJSONDecoded = base64url.decode(clientDataJSON);
-    const signatureDecoded = base64url.decode(signature);
-    const userHandleDecoded = base64url.decode(userHandle);
-    const clientDataJSONParsed = JSON.parse(clientDataJSONUtf8);
-
+    const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
     console.log(clientDataJSONParsed);
 
     const verification = await verifyAuthenticationResponse({
@@ -169,17 +165,17 @@ app.post('/login', async (req: Request, res: Response) => {
         id,
         rawId,
         response: {
-          clientDataJSON: clientDataJSONDecoded,
-          authenticatorData: authenticatorDataDecoded,
-          signature: signatureDecoded,
-          userHandle: userHandleDecoded,
+          clientDataJSON: clientDataJSON,
+          authenticatorData: authenticatorData,
+          signature: signature,
+          userHandle: userHandle,
         },
-        clientExtensionResults: {},
+        clientExtensionResults: { appid: true },
         type,
       },
       expectedChallenge: clientDataJSONParsed.challenge,
-      expectedOrigin: clientDataJSONParsed.origin,
-      expectedRPID: existingUser.id,
+      expectedOrigin: 'https://biometric-authentication-web-app.onrender.com',
+      expectedRPID: 'biometric-authentication-web-app.onrender.com',
       authenticator: {
         credentialID: existingUser.credentials.credentialID,
         credentialPublicKey: existingUser.credentials.publicKeyBytes,
