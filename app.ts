@@ -133,7 +133,7 @@ app.post('/login', async (req: Request, res: Response) => {
   const { email, credential } = req.body;
   let existingUser;
 
-  console.log('credential', credential);
+  console.log('req.body', req.body);
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
