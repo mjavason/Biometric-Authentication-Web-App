@@ -199,7 +199,7 @@ async function getCredential(email) {
     // decode the clientDataJSON into a utf-8 string
     const utf8Decoder = new TextDecoder('utf-8');
     const decodedClientData = utf8Decoder.decode(
-      credentials.response.clientDataJSON
+      credential.response.clientDataJSON
     );
 
     const decodedAssertion = {
