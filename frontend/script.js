@@ -171,7 +171,7 @@ async function getCredential(email) {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          id: credentialIdArray,
+          id: base64url.encode(credentialIdArray),
           type: 'public-key',
           // transports: ['usb', 'ble', 'nfc'],
         },
@@ -194,12 +194,6 @@ async function getCredential(email) {
     const userHandle = credential.response.userHandle
       ? base64url.encode(credential.response.userHandle)
       : undefined;
-
-    // decode the clientDataJSON into a utf-8 string
-    const utf8Decoder = new TextDecoder('utf-8');
-    const decodedClientData = utf8Decoder.decode(
-      credential.response.clientDataJSON
-    );
 
     const decodedAssertion = {
       id: credential.id,

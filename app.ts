@@ -35,6 +35,15 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
+function uint8ArrayToBase64(uint8Array: Uint8Array) {
+  let binary = '';
+  const len = uint8Array.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(uint8Array[i]);
+  }
+  return btoa(binary);
+}
+
 function stringToArrayBuffer(str: string): ArrayBuffer {
   const encoder = new TextEncoder();
   return encoder.encode(str).buffer;
@@ -43,6 +52,11 @@ function stringToArrayBuffer(str: string): ArrayBuffer {
 // Function to convert ArrayBuffer to Buffer
 function arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
   return Buffer.from(new Uint8Array(arrayBuffer));
+}
+
+function objectToUint8Array(obj: object) {
+  const arr = Object.values(obj);
+  return new Uint8Array(arr);
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
@@ -145,12 +159,13 @@ app.post('/login', async (req: Request, res: Response) => {
 
   //perform the webauthn check here
   if (existingUser) {
+    const { credentialId, publicKeyBytes } = existingUser.credentials;
+
     const {
       id,
       rawId,
       authenticatorData,
       clientDataJSON,
-      clientDataJSONUtf8,
       signature,
       userHandle,
       type,
@@ -158,7 +173,8 @@ app.post('/login', async (req: Request, res: Response) => {
 
     const clientDataJSONDecoded = base64url.decode(clientDataJSON);
     const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
-    console.log(clientDataJSONParsed);
+
+    const base64EncodedId = base64url.encode(id);
 
     const verification = await verifyAuthenticationResponse({
       response: {
@@ -170,15 +186,15 @@ app.post('/login', async (req: Request, res: Response) => {
           signature: signature,
           userHandle: userHandle,
         },
-        clientExtensionResults: { appid: true },
+        clientExtensionResults: {},
         type,
       },
       expectedChallenge: clientDataJSONParsed.challenge,
       expectedOrigin: 'https://biometric-authentication-web-app.onrender.com',
       expectedRPID: 'biometric-authentication-web-app.onrender.com',
       authenticator: {
-        credentialID: existingUser.credentials.credentialID,
-        credentialPublicKey: existingUser.credentials.publicKeyBytes,
+        credentialID: credentialId,
+        credentialPublicKey: publicKeyBytes,
         counter: 1,
       },
     });
