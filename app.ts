@@ -150,6 +150,7 @@ app.post('/login', async (req: Request, res: Response) => {
       rawId,
       authenticatorData,
       clientDataJSON,
+      clientDataJSONUtf8,
       signature,
       userHandle,
       type,
@@ -157,9 +158,11 @@ app.post('/login', async (req: Request, res: Response) => {
 
     const authenticatorDataDecoded = base64url.decode(authenticatorData);
     const clientDataJSONDecoded = base64url.decode(clientDataJSON);
-    const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
     const signatureDecoded = base64url.decode(signature);
     const userHandleDecoded = base64url.decode(userHandle);
+    const clientDataJSONParsed = JSON.parse(clientDataJSONUtf8);
+
+    console.log(clientDataJSONParsed);
 
     const verification = await verifyAuthenticationResponse({
       response: {
@@ -256,7 +259,7 @@ app.listen(PORT, async () => {
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // throw Error('This is a sample error');
   console.log(`${'\x1b[31m'}${err.message} ${'\x1b][0m]'}`);
-  // console.log(err);
+  console.log(err);
   return res
     .status(500)
     .send({ success: false, status: 500, message: err.message });

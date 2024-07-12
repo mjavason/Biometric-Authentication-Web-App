@@ -196,11 +196,18 @@ async function getCredential(email) {
       ? base64url.encode(credential.response.userHandle)
       : undefined;
 
+    // decode the clientDataJSON into a utf-8 string
+    const utf8Decoder = new TextDecoder('utf-8');
+    const decodedClientData = utf8Decoder.decode(
+      credentials.response.clientDataJSON
+    );
+
     const decodedAssertion = {
       id: credential.id,
       rawId,
       authenticatorData,
       clientDataJSON,
+      clientDataJSONUtf8: decodedClientData,
       signature,
       userHandle,
       type: credential.type,
