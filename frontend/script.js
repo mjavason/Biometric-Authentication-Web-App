@@ -171,7 +171,7 @@ async function getCredential(email) {
       challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
       allowCredentials: [
         {
-          id: base64url.encode(credentialIdArray),
+          id: credentialIdArray,
           type: 'public-key',
           // transports: ['usb', 'ble', 'nfc'],
         },
