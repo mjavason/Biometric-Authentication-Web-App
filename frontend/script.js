@@ -197,7 +197,7 @@ async function getCredential(email) {
 
     const decodedAssertion = {
       id: credential.id,
-      rawId: credential.rawId,
+      rawId: base64url.encode(credential.rawId),
       type: credential.type,
       authenticatorData,
       clientDataJSON,
