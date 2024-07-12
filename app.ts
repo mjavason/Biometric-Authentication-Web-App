@@ -5,6 +5,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+import base64url from 'base64url';
 
 //#region app setup
 const app = express();
@@ -144,25 +145,46 @@ app.post('/login', async (req: Request, res: Response) => {
 
   //perform the webauthn check here
   if (existingUser) {
-    let verified = true;
+    const {
+      id,
+      rawId,
+      authenticatorData,
+      clientDataJSON,
+      signature,
+      userHandle,
+      type,
+    } = credential;
 
-    const { authenticatorData, clientDataJSON, signature } = credential;
+    const authenticatorDataDecoded = base64url.decode(authenticatorData);
+    const clientDataJSONDecoded = base64url.decode(clientDataJSON);
+    const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
+    const signatureDecoded = base64url.decode(signature);
+    const userHandleDecoded = base64url.decode(userHandle);
 
-    // const verification = await verifyAuthenticationResponse({
-    // credential: claimedCred,
-    // expectedChallenge,
-    // expectedOrigin,
-    // expectedRPID,
-    // authenticator,
-    // userDevicePublicKeys,
-    // });
+    const verification = await verifyAuthenticationResponse({
+      response: {
+        id,
+        rawId,
+        response: {
+          clientDataJSON: clientDataJSONDecoded,
+          authenticatorData: authenticatorDataDecoded,
+          signature: signatureDecoded,
+          userHandle: userHandleDecoded,
+        },
+        clientExtensionResults: {},
+        type,
+      },
+      expectedChallenge: clientDataJSONParsed.challenge,
+      expectedOrigin: clientDataJSONParsed.origin,
+      expectedRPID: existingUser.id,
+      authenticator: {
+        credentialID: existingUser.credentials.credentialID,
+        credentialPublicKey: existingUser.credentials.publicKeyBytes,
+        counter: 1,
+      },
+    });
 
-    // const { verified, authenticationInfo } = verification;
-    // const { extensionOutputs } = authenticationInfo;
-
-    // if (!verified) {
-    //   throw new Error('User verification failed.');
-    // }
+    const { verified } = verification;
 
     if (verified) {
       return res.send({
@@ -178,6 +200,7 @@ app.post('/login', async (req: Request, res: Response) => {
         data: existingUser,
       });
       // return 'Verification failed. 😭';
+      //   throw new Error('User verification failed.');
     }
   }
 

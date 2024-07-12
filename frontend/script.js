@@ -197,11 +197,13 @@ async function getCredential(email) {
       : undefined;
 
     const decodedAssertion = {
+      id: credential.id,
       rawId,
       authenticatorData,
       clientDataJSON,
       signature,
       userHandle,
+      type: credential.type,
     };
 
     let login = await api.post('/login', {
