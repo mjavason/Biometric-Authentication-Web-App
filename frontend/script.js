@@ -200,13 +200,21 @@ async function getCredential(email) {
         'Authenticator data',
         CBOR.decode(credential.response.authenticatorData)
       );
+    } catch (e) {
+      console.log('unable to convert authenticator data with cbor', e);
+    }
+    try {
       console.log('signature', CBOR.decode(credential.response.signature));
+    } catch (e) {
+      console.log('unable to convert signature with cbor', e);
+    }
+    try {
       console.log(
         'client data json',
         CBOR.decode(credential.response.clientDataJSON)
       );
     } catch (e) {
-      console.log('unable to converte to cbor', e);
+      console.log('unable to convert clientdatajson with cbor', e);
     }
 
     const decodedAssertion = {
