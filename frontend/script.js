@@ -195,15 +195,19 @@ async function getCredential(email) {
       ? base64url.encode(credential.response.userHandle)
       : undefined;
 
-    console.log(
-      'Authenticator data',
-      CBOR.decode(credential.response.authenticatorData)
-    );
-    console.log('signature', CBOR.decode(credential.response.signature));
-    console.log(
-      'client data json',
-      CBOR.decode(credential.response.clientDataJSON)
-    );
+    try {
+      console.log(
+        'Authenticator data',
+        CBOR.decode(credential.response.authenticatorData)
+      );
+      console.log('signature', CBOR.decode(credential.response.signature));
+      console.log(
+        'client data json',
+        CBOR.decode(credential.response.clientDataJSON)
+      );
+    } catch (e) {
+      console.log('unable to converte to cbor', e);
+    }
 
     const decodedAssertion = {
       id: credential.id,
