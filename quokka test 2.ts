@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import base64url from 'base64url';
 import forge from 'node-forge';
 
@@ -9,9 +8,6 @@ function publicKeyBytesConverter(publicKeyBytes: object): string {
   // Base64 encode the buffer
   const base64PublicKey = base64url.encode(publicKeyBuffer);
 
-  // Check if base64PublicKey is null or empty
-  // if (!base64PublicKey) return false;
-
   // PEM format the key
   const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${base64PublicKey
     .match(/.{1,64}/g)!
@@ -21,47 +17,10 @@ function publicKeyBytesConverter(publicKeyBytes: object): string {
   return publicKeyPem;
 }
 
-function verify(
-  authenticatorDataBase64: any,
-  clientDataJSONBase64: any,
-  signatureBase64: any,
-  publicKeyBytes: any
-) {
-  // Example input data
-  const authenticatorData = base64url.decode(authenticatorDataBase64);
-  const clientDataJSON = base64url.decode(clientDataJSONBase64);
-  const signature = base64url.decode(signatureBase64);
-
-  // Example public key in PEM format
-  //   const publicKeyPem = -----BEGIN PUBLIC KEY-----
-  // YOUR_PUBLIC_KEY_HERE
-  // -----END PUBLIC KEY-----;
-
-  // Convert clientDataJSON to SHA-256 hash
-  const clientDataHash = crypto
-    .createHash('sha256')
-    .update(clientDataJSON)
-    .digest();
-
-  // Concatenate authenticatorData and clientDataHash
-  const signedData = authenticatorData + clientDataHash;
+function verify(publicKeyBytes: any) {
   const publicKeyPem = publicKeyBytesConverter(publicKeyBytes);
-
-  // Verify the signature
-  const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);
-  const sha256 = forge.md.sha256.create();
-  sha256.update(signedData, 'utf8');
-
-  const signatureBytes = forge.util.decode64(signature);
-  return publicKey.verify(sha256.digest().getBytes(), signatureBytes);
+  return forge.pki.publicKeyFromPem(publicKeyPem);
 }
-
-const authenticatorData = 'YLvOFlInU5hYtjFTaUPyfN5caEY40IOeeSFaOp7OdMMFAAAAAg';
-const clientDataJSON =
-  'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiT0RnNE56azJOak15Iiwib3JpZ2luIjoiaHR0cHM6Ly9iaW9tZXRyaWMtYXV0aGVudGljYXRpb24td2ViLWFwcC5vbnJlbmRlci5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2UsIm90aGVyX2tleXNfY2FuX2JlX2FkZGVkX2hlcmUiOiJkbyBub3QgY29tcGFyZSBjbGllbnREYXRhSlNPTiBhZ2FpbnN0IGEgdGVtcGxhdGUuIFNlZSBodHRwczovL2dvby5nbC95YWJQZXgifQ';
-
-const signature =
-  'dugjK3vuiIUw7U9RXhM9GG-kpc3ZJZLc3HQ6mOwjhYdRWn-nsrHSYOyZNdhhZfpb8SaJzsDmxgTxQgfk_TL1SYS2EtQA8I-CniJpuI5_g1YCvw0BDJ_TKMiNsaQ1XccL3fzMjoH9O3dSzA3z3e4qCcPzdYSIzNlyOrr7QmSnjLeLJH-hS6gj0eD8NW9jZgRskrOTuRDzqJSKD19cjGnOnKM1eOsjXcwAr9qefwNpuqzGugAAQDsIxvN5bX2O2B9EYFQ2OWxjpzso3HxPTV6L1baMYFANgW4EM_bKkICAO_YSgXXHxQuh1arJ9s2S4UczYWpoRjgt4EoJxdj9dYu8kQ';
 
 const publicKeyBytes = {
   '0': 164,
@@ -337,13 +296,5 @@ const publicKeyBytes = {
   '270': 0,
   '271': 1,
 };
-const publicKeyBuffer = publicKeyBytesConverter(publicKeyBytes);
 
-const verified = verify(
-  authenticatorData,
-  clientDataJSON,
-  signature,
-  publicKeyBuffer
-);
-if (verified) console.log('Verified successfully!');
-console.log('Error not verified');
+console.log(verify(publicKeyBytes));
