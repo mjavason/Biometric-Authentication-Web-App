@@ -35,6 +35,25 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
+function publicKeyBytesConverter(publicKeyBytes: object): string | false {
+  // Convert the publicKeyBytes object to a Buffer
+  const publicKeyBuffer = Buffer.from(Object.values(publicKeyBytes));
+
+  // Base64 encode the buffer
+  const base64PublicKey = base64url.encode(publicKeyBuffer);
+
+  // Check if base64PublicKey is null or empty
+  if (!base64PublicKey) return false;
+
+  // PEM format the key
+  const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${base64PublicKey
+    .match(/.{1,64}/g)!
+    .join('\n')}\n-----END PUBLIC KEY-----`;
+
+  console.log(publicKeyPem);
+  return publicKeyPem;
+}
+
 function verify(
   authenticatorDataBase64: any,
   clientDataJSONBase64: any,
@@ -47,9 +66,9 @@ function verify(
   const signature = Buffer.from(signatureBase64, 'base64');
 
   // Example public key in PEM format
-  //   const publicKeyPem = `-----BEGIN PUBLIC KEY-----
+  //   const publicKeyPem = -----BEGIN PUBLIC KEY-----
   // YOUR_PUBLIC_KEY_HERE
-  // -----END PUBLIC KEY-----`;
+  // -----END PUBLIC KEY-----;
 
   // Convert clientDataJSON to SHA-256 hash
   const clientDataHash = crypto
@@ -91,7 +110,7 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   // }
 
   users.push(user);
-  console.log(users);
+  // console.log(users);
 
   return res.send({
     message: 'User registered successfully',
@@ -103,7 +122,7 @@ app.post('/register/:email', async (req: Request, res: Response) => {
 });
 
 app.post('/set-credential', async (req: Request, res: Response) => {
-  console.log('req.body', req.body);
+  // console.log('req.body', req.body);
   const { credentials, email } = req.body;
 
   if (!email || !credentials)
@@ -159,7 +178,7 @@ app.post('/login', async (req: Request, res: Response) => {
   const { email, credential } = req.body;
   let existingUser;
 
-  console.log('req.body', req.body);
+  // console.log('req.body', req.body);
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
@@ -182,14 +201,14 @@ app.post('/login', async (req: Request, res: Response) => {
       type,
     } = credential;
 
-    const clientDataJSONDecoded = base64url.decode(clientDataJSON);
+    // const clientDataJSONDecoded = base64url.decode(clientDataJSON);
     // const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
 
     const verified = verify(
       authenticatorData,
       clientDataJSON,
       signature,
-      publicKeyBytes
+      publicKeyBytesConverter(publicKeyBytes)
     );
     // const verified = true;
 
