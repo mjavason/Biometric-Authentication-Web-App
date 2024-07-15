@@ -4,8 +4,8 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import base64url from 'base64url';
+import crypto from 'crypto';
 
 //#region app setup
 const app = express();
@@ -35,28 +35,39 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
-function uint8ArrayToBase64(uint8Array: Uint8Array) {
-  let binary = '';
-  const len = uint8Array.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(uint8Array[i]);
-  }
-  return btoa(binary);
-}
+function verify(
+  authenticatorDataBase64: any,
+  clientDataJSONBase64: any,
+  signatureBase64: any,
+  publicKeyBytes: any
+) {
+  // Example input data
+  const authenticatorData = Buffer.from(authenticatorDataBase64, 'base64');
+  const clientDataJSON = Buffer.from(clientDataJSONBase64, 'base64');
+  const signature = Buffer.from(signatureBase64, 'base64');
 
-function stringToArrayBuffer(str: string): ArrayBuffer {
-  const encoder = new TextEncoder();
-  return encoder.encode(str).buffer;
-}
+  // Example public key in PEM format
+  //   const publicKeyPem = `-----BEGIN PUBLIC KEY-----
+  // YOUR_PUBLIC_KEY_HERE
+  // -----END PUBLIC KEY-----`;
 
-// Function to convert ArrayBuffer to Buffer
-function arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
-  return Buffer.from(new Uint8Array(arrayBuffer));
-}
+  // Convert clientDataJSON to SHA-256 hash
+  const clientDataHash = crypto
+    .createHash('sha256')
+    .update(clientDataJSON)
+    .digest();
 
-function objectToUint8Array(obj: object) {
-  const arr = Object.values(obj);
-  return new Uint8Array(arr);
+  // Concatenate authenticatorData and clientDataHash
+  const signedData = Buffer.concat([authenticatorData, clientDataHash]);
+
+  // Verify the signature using the public key
+  const verify = crypto.createVerify('SHA256');
+  verify.update(signedData);
+  verify.end();
+
+  return verify.verify(publicKeyBytes, signature);
+
+  // console.log('Signature is valid:', signatureIsValid);
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
@@ -172,35 +183,15 @@ app.post('/login', async (req: Request, res: Response) => {
     } = credential;
 
     const clientDataJSONDecoded = base64url.decode(clientDataJSON);
-    const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
-    const signatureDecoded = base64url.decode(signature);
+    // const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
 
-    const base64EncodedId = base64url.encode(id);
-
-    const verification = await verifyAuthenticationResponse({
-      response: {
-        id,
-        rawId,
-        response: {
-          clientDataJSON,
-          authenticatorData,
-          signature,
-          userHandle,
-        },
-        clientExtensionResults: {},
-        type,
-      },
-      expectedChallenge: clientDataJSONParsed.challenge,
-      expectedOrigin: 'https://biometric-authentication-web-app.onrender.com',
-      expectedRPID: 'biometric-authentication-web-app.onrender.com',
-      authenticator: {
-        credentialID: credentialId,
-        credentialPublicKey: publicKeyBytes,
-        counter: 1,
-      },
-    });
-
-    const { verified } = verification;
+    const verified = verify(
+      authenticatorData,
+      clientDataJSON,
+      signature,
+      publicKeyBytes
+    );
+    // const verified = true;
 
     if (verified) {
       return res.send({
