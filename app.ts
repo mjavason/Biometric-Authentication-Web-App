@@ -173,6 +173,7 @@ app.post('/login', async (req: Request, res: Response) => {
 
     const clientDataJSONDecoded = base64url.decode(clientDataJSON);
     const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
+    const signatureDecoded = base64url.decode(signature);
 
     const base64EncodedId = base64url.encode(id);
 
@@ -181,10 +182,10 @@ app.post('/login', async (req: Request, res: Response) => {
         id,
         rawId,
         response: {
-          clientDataJSON: clientDataJSON,
-          authenticatorData: authenticatorData,
-          signature: signature,
-          userHandle: userHandle,
+          clientDataJSON,
+          authenticatorData,
+          signature,
+          userHandle,
         },
         clientExtensionResults: {},
         type,

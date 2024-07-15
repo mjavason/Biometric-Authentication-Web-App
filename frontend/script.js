@@ -195,6 +195,16 @@ async function getCredential(email) {
       ? base64url.encode(credential.response.userHandle)
       : undefined;
 
+    console.log(
+      'Authenticator data',
+      CBOR.decode(credential.response.authenticatorData)
+    );
+    console.log('signature', CBOR.decode(credential.response.signature));
+    console.log(
+      'client data json',
+      CBOR.decode(credential.response.clientDataJSON)
+    );
+
     const decodedAssertion = {
       id: credential.id,
       rawId: base64url.encode(credential.rawId),
