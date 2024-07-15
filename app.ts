@@ -204,6 +204,8 @@ app.post('/login', async (req: Request, res: Response) => {
     // const clientDataJSONDecoded = base64url.decode(clientDataJSON);
     // const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
 
+    console.log(authenticatorData, clientDataJSON, signature, publicKeyBytes);
+
     const verified = verify(
       authenticatorData,
       clientDataJSON,
