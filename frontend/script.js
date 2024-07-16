@@ -106,7 +106,7 @@ async function getCredential(email) {
     const userInfo = await api.get(`/get-credential/${email}`);
     if (!userInfo) return;
 
-    const credentials = await startAuthentication(userInfo.data.options, true);
+    const credentials = await startAuthentication(userInfo.data.options);
     console.log('assertion', credentials);
 
     let login = await api.post('/login', {
