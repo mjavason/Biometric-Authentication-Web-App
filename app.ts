@@ -4,7 +4,6 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import base64url from 'base64url';
 import crypto from 'crypto';
 
 //#region app setup
@@ -35,24 +34,6 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
-function publicKeyBytesConverter(publicKeyBytes: object): string | false {
-  // Convert the publicKeyBytes object to a Buffer
-  const publicKeyBuffer = Buffer.from(Object.values(publicKeyBytes));
-
-  // Base64 encode the buffer
-  const base64PublicKey = base64url.encode(publicKeyBuffer);
-
-  // Check if base64PublicKey is null or empty
-  if (!base64PublicKey) return false;
-
-  // PEM format the key
-  const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${base64PublicKey
-    .match(/.{1,64}/g)!
-    .join('\n')}\n-----END PUBLIC KEY-----`;
-
-  console.log(publicKeyPem);
-  return publicKeyPem;
-}
 
 function verify(
   authenticatorDataBase64: any,
@@ -172,69 +153,6 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
   return res
     .status(404)
     .send({ success: false, message: 'User does not exist. Please register' });
-});
-
-app.post('/login', async (req: Request, res: Response) => {
-  const { email, credential } = req.body;
-  let existingUser;
-
-  // console.log('req.body', req.body);
-
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].email == email) {
-      existingUser = users[i];
-      break;
-    }
-  }
-
-  //perform the webauthn check here
-  if (existingUser) {
-    const { credentialId, publicKeyBytes } = existingUser.credentials;
-
-    const {
-      id,
-      rawId,
-      authenticatorData,
-      clientDataJSON,
-      signature,
-      userHandle,
-      type,
-    } = credential;
-
-    // const clientDataJSONDecoded = base64url.decode(clientDataJSON);
-    // const clientDataJSONParsed = JSON.parse(clientDataJSONDecoded);
-
-    console.log(authenticatorData, clientDataJSON, signature, publicKeyBytes);
-
-    const verified = verify(
-      authenticatorData,
-      clientDataJSON,
-      signature,
-      publicKeyBytesConverter(publicKeyBytes)
-    );
-    // const verified = true;
-
-    if (verified) {
-      return res.send({
-        success: true,
-        message: 'Logged in successfully',
-        data: existingUser,
-      });
-      // return 'Hooray! User is authenticated! 🎉';
-    } else {
-      return res.status(403).send({
-        success: false,
-        message: 'Authentication failed',
-        data: existingUser,
-      });
-      // return 'Verification failed. 😭';
-      //   throw new Error('User verification failed.');
-    }
-  }
-
-  return res
-    .status(404)
-    .send({ success: false, message: 'User email does not exist' });
 });
 
 app.get('/users', async (req: Request, res: Response) => {

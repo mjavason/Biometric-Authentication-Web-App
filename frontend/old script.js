@@ -1,7 +1,6 @@
 const registerButton = document.getElementById('registerBtn');
 const loginButton = document.getElementById('loginBtn');
 const emailInput = document.getElementById('emailInput');
-const { startRegistration } = SimpleWebAuthnBrowser;
 class ApiHelper {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
@@ -158,6 +157,67 @@ async function createCredential(registrationData) {
   }
 }
 
+async function getCredential(email) {
+  try {
+    const userInfo = await api.get(`/get-credential/${email}`);
+    if (!userInfo) return;
+
+    const { user, challenge } = userInfo.data;
+    const { credentialId } = user.credentials;
+    // Convert the credentialId object to a Uint8Array
+    const credentialIdArray = new Uint8Array(Object.values(credentialId));
+
+    const publicKeyCredentialRequestOptions = {
+      challenge: Uint8Array.from(challenge, (c) => c.charCodeAt(0)),
+      allowCredentials: [
+        {
+          id: credentialIdArray,
+          type: 'public-key',
+          // transports: ['usb', 'ble', 'nfc'],
+        },
+      ],
+      timeout: 60000,
+      userVerification: 'required',
+    };
+
+    const credential = await navigator.credentials.get({
+      publicKey: publicKeyCredentialRequestOptions,
+    });
+    console.log('assertion', credential);
+
+    // Encode the credential.
+    const authenticatorData = base64url.encode(
+      credential.response.authenticatorData
+    );
+    const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
+    const signature = base64url.encode(credential.response.signature);
+    const userHandle = credential.response.userHandle
+      ? base64url.encode(credential.response.userHandle)
+      : undefined;
+
+    const decodedAssertion = {
+      id: credential.id,
+      rawId: base64url.encode(credential.rawId),
+      type: credential.type,
+      authenticatorData,
+      clientDataJSON,
+      signature,
+      userHandle,
+    };
+
+    let login = await api.post('/login', {
+      email: user.email,
+      credential: decodedAssertion,
+    });
+    if (!login) return;
+
+    window.alert(login.message);
+  } catch (e) {
+    console.error('Error getting credential:', e);
+    window.alert(e.message);
+  }
+}
+
 registerButton.addEventListener('click', () => {
   let userEmail = emailInput.value;
 
@@ -167,6 +227,12 @@ registerButton.addEventListener('click', () => {
     // window.alert(data.message);
     createCredential(data.data);
   });
+});
+
+loginButton.addEventListener('click', () => {
+  let userEmail = emailInput.value;
+
+  getCredential(userEmail);
 });
 
 // createCredential();
