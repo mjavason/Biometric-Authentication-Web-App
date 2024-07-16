@@ -101,6 +101,27 @@ async function createCredential(registrationData) {
   }
 }
 
+async function getCredential(email) {
+  try {
+    const userInfo = await api.get(`/get-credential/${email}`);
+    if (!userInfo) return;
+
+    const credentials = await startAuthentication(userInfo.options, true);
+    console.log('assertion', credentials);
+
+    let login = await api.post('/login', {
+      email: user.email,
+      credentials,
+    });
+    if (!login) return;
+
+    window.alert(login.message);
+  } catch (e) {
+    console.error('Error getting credential:', e);
+    window.alert(e.message);
+  }
+}
+
 registerButton.addEventListener('click', () => {
   let userEmail = emailInput.value;
 
@@ -111,4 +132,9 @@ registerButton.addEventListener('click', () => {
   });
 });
 
+loginButton.addEventListener('click', () => {
+  let userEmail = emailInput.value;
+
+  getCredential(userEmail);
+});
 // createCredential();

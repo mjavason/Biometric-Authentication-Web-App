@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import SimpleWebAuthnServer, {
   generateRegistrationOptions,
   verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
 
@@ -28,6 +30,7 @@ var users: {
   registrationOptions: PublicKeyCredentialCreationOptionsJSON;
   credentials?: any;
   registrationResponse?: SimpleWebAuthnServer.VerifiedRegistrationResponse;
+  currentAuthenticationOptions?: any;
 }[] = [];
 /**
  * Human-readable title for your website
@@ -59,6 +62,7 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   return randomNumbers;
 }
 
+//collect the users details and use it to generate a public key that will be used to get the main keys.
 app.post('/register/:email', async (req: Request, res: Response) => {
   const user: any = {
     email: req.params.email,
@@ -116,6 +120,7 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   });
 });
 
+//When the webauthn credentials are retrieved, store it in the users profile.
 app.post('/set-credential', async (req: Request, res: Response) => {
   // console.log('req.body', req.body);
   const { credentials, email } = req.body;
@@ -155,9 +160,9 @@ app.post('/set-credential', async (req: Request, res: Response) => {
     .send({ success: false, message: 'User email does not exist' });
 });
 
+// before the user logs in the same public key credentials need to be generated
 app.get('/get-credential/:email', async (req: Request, res: Response) => {
   let email = req.params.email;
-  let challenge = generateRandomNumbers(9, 0, 9);
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
@@ -165,10 +170,20 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
         users.splice(i);
         break;
       }
+      const options = await generateAuthenticationOptions({
+        rpID,
+        allowCredentials: [
+          {
+            id: users[i].credentials.id,
+            transports: users[i].credentials.response.transports,
+          },
+        ],
+      });
+
       return res.send({
         success: true,
         message: 'User credentials retrieved successfully',
-        data: { user: users[i], challenge },
+        data: { user: users[i], options },
       });
     }
   }

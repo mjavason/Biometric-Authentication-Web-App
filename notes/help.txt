@@ -1,0 +1,2 @@
+backend docs: https://simplewebauthn.dev/docs/packages/server
+frontend docs: https://simplewebauthn.dev/docs/packages/browser
