@@ -80,78 +80,22 @@ const api = new ApiHelper(
 
 async function createCredential(registrationData) {
   try {
-    const credentials = await navigator.credentials.create({
-      publicKey: {
-        challenge: Uint8Array.from(registrationData.challenge, (c) =>
-          c.charCodeAt(0)
-        ),
-        rp: {
-          name: 'Biometric Web App',
-          id: window.location.hostname, // Dynamically use the current hostname
-        },
-        user: {
-          id: Uint8Array.from(registrationData.user.id, (c) => c.charCodeAt(0)),
-          name: registrationData.user.email,
-          displayName: registrationData.user.email,
-        },
-        pubKeyCredParams: [
-          { alg: -7, type: 'public-key' }, // ES256: ECDSA with SHA-256
-          { alg: -257, type: 'public-key' }, // RS256: RSASSA-PKCS1-v1_5 with SHA-256
-        ],
-        authenticatorSelection: {
-          userVerification: 'required',
-        },
-        timeout: 60000,
-        attestation: 'direct',
-      },
-    });
-    // console.log('Credentials:', credentials);
+    // Pass the options to the authenticator and wait for a response
+    const attResp = await startRegistration(await registrationData.options);
 
-    // decode the clientDataJSON into a utf-8 string
-    // const utf8Decoder = new TextDecoder('utf-8');
-    // const decodedClientData = utf8Decoder.decode(
-    //   credentials.response.clientDataJSON
-    // );
+    // const credentials = await navigator.credentials.create({
+    //   publicKey: registrationData.options,
+    // });
 
-    // parse the string as an object
-    // const clientDataObj = JSON.parse(decodedClientData);
-    // console.log('Client Data Object:', clientDataObj);
-
-    const decodedAttestationObj = CBOR.decode(
-      credentials.response.attestationObject
-    );
-
-    // console.log('Decoded Attestation Object:', decodedAttestationObj);
-
-    const { authData } = decodedAttestationObj;
-
-    // get the length of the credential ID
-    const dataView = new DataView(new ArrayBuffer(2));
-    const idLenBytes = authData.slice(53, 55);
-    idLenBytes.forEach((value, index) => dataView.setUint8(index, value));
-    const credentialIdLength = dataView.getUint16(0);
-
-    // get the credential ID
-    const credentialId = authData.slice(55, 55 + credentialIdLength);
-
-    // get the public key object
-    const publicKeyBytes = authData.slice(55 + credentialIdLength);
-
-    // the publicKeyBytes are encoded again as CBOR
-    // const publicKeyObject = CBOR.decode(publicKeyBytes.buffer);
-    // console.log('Public Key Object:', publicKeyObject);
-
-    await api
-      .post(`/set-credential`, {
-        email: registrationData.user.email,
-        credentials: { credentialId, publicKeyBytes },
-      })
-      .then((data) => {
-        if (!data) return;
-        window.alert(data.message);
-      });
-
-    // window.alert('Logged in successfully ✔✔✔');
+    // await api
+    //   .post(`/set-credential`, {
+    //     email: registrationData.user.email,
+    //     credentials: { credentialId, publicKeyBytes },
+    //   })
+    //   .then((data) => {
+    //     if (!data) return;
+    //     window.alert(data.message);
+    //   });
   } catch (e) {
     console.error('Error creating credential:', e);
     window.alert(e.message);

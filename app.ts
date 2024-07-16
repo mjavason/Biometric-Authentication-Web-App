@@ -4,7 +4,11 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import crypto from 'crypto';
+import SimpleWebAuthnServer, {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+} from '@simplewebauthn/server';
+import { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
 
 //#region app setup
 const app = express();
@@ -19,6 +23,21 @@ dotenv.config({ path: './.env' });
 const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
 var users: { email: string; id: string; credentials?: any }[] = [];
+/**
+ * Human-readable title for your website
+ */
+const rpName = 'SimpleWebAuthn Example';
+/**
+ * A unique identifier for your website. 'localhost' is okay for
+ * local dev
+ */
+const rpID = 'localhost';
+/**
+ * The URL at which registrations and authentications should occur.
+ * 'http://localhost' and 'http://localhost:PORT' are also valid.
+ * Do NOT include any trailing /
+ */
+const origin = `https://${rpID}`;
 //#endregion
 
 //#region code here
@@ -32,42 +51,6 @@ function generateRandomNumbers(count: number, min: number, max: number) {
   }
 
   return randomNumbers;
-}
-
-
-function verify(
-  authenticatorDataBase64: any,
-  clientDataJSONBase64: any,
-  signatureBase64: any,
-  publicKeyBytes: any
-) {
-  // Example input data
-  const authenticatorData = Buffer.from(authenticatorDataBase64, 'base64');
-  const clientDataJSON = Buffer.from(clientDataJSONBase64, 'base64');
-  const signature = Buffer.from(signatureBase64, 'base64');
-
-  // Example public key in PEM format
-  //   const publicKeyPem = -----BEGIN PUBLIC KEY-----
-  // YOUR_PUBLIC_KEY_HERE
-  // -----END PUBLIC KEY-----;
-
-  // Convert clientDataJSON to SHA-256 hash
-  const clientDataHash = crypto
-    .createHash('sha256')
-    .update(clientDataJSON)
-    .digest();
-
-  // Concatenate authenticatorData and clientDataHash
-  const signedData = Buffer.concat([authenticatorData, clientDataHash]);
-
-  // Verify the signature using the public key
-  const verify = crypto.createVerify('SHA256');
-  verify.update(signedData);
-  verify.end();
-
-  return verify.verify(publicKeyBytes, signature);
-
-  // console.log('Signature is valid:', signatureIsValid);
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
@@ -93,11 +76,35 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   users.push(user);
   // console.log(users);
 
+  const options: PublicKeyCredentialCreationOptionsJSON =
+    await generateRegistrationOptions({
+      rpName,
+      rpID,
+      userName: user.email,
+      // Don't prompt users for additional information about the authenticator
+      // (Recommended for smoother UX)
+      attestationType: 'none',
+      // Prevent users from re-registering existing authenticators
+      // excludeCredentials: userPasskeys.map((passkey) => ({
+      //   id: passkey.id,
+      //   // Optional
+      //   transports: passkey.transports,
+      // })),
+      // See "Guiding use of authenticators via authenticatorSelection" below
+      authenticatorSelection: {
+        // Defaults
+        residentKey: 'preferred',
+        userVerification: 'preferred',
+        // Optional
+        authenticatorAttachment: 'platform',
+      },
+    });
+
   return res.send({
     message: 'User registered successfully',
     data: {
       user,
-      challenge: generateRandomNumbers(9, 0, 9),
+      options,
     },
   });
 });
