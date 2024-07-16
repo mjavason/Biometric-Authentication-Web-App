@@ -65,7 +65,7 @@ class ApiHelper {
         `Error: ${response.status} ${response.statusText} - ${errorData.message}`
       );
     }
-    console.log('API response:', response);
+    console.log('API response:', response.json());
     return response.json();
   }
 
