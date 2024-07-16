@@ -27,6 +27,7 @@ var users: {
   id: string;
   registrationOptions: PublicKeyCredentialCreationOptionsJSON;
   credentials?: any;
+  registrationResponse?: SimpleWebAuthnServer.VerifiedRegistrationResponse;
 }[] = [];
 /**
  * Human-readable title for your website
@@ -140,10 +141,11 @@ app.post('/set-credential', async (req: Request, res: Response) => {
         expectedRPID: rpID,
       });
       users[i].credentials = credentials;
+      users[i].registrationResponse = verification;
       return res.send({
         successful: true,
         message: 'Registration complete. Now try logging in',
-        verification
+        verification,
       });
     }
   }
