@@ -180,6 +180,8 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
         ],
       });
 
+      users[i].currentAuthenticationOptions = options;
+
       return res.send({
         success: true,
         message: 'User credentials retrieved successfully',
@@ -207,7 +209,12 @@ app.post('/login', async (req: Request, res: Response) => {
 
   //perform the webauthn check here
   if (existingUser) {
-    const { credentialId, publicKeyBytes } = existingUser.credentials;
+    const publicKeyBuffer = Buffer.from(
+      existingUser.credentials.response.publicKey,
+      'utf-8'
+    );
+
+    // console.log('public key', existingUser.credentials.response.publicKey);
 
     let verification = await verifyAuthenticationResponse({
       response: credentials,
@@ -216,7 +223,7 @@ app.post('/login', async (req: Request, res: Response) => {
       expectedRPID: rpID,
       authenticator: {
         credentialID: existingUser.credentials.id,
-        credentialPublicKey: existingUser.credentials.response.publicKey,
+        credentialPublicKey: new Uint8Array(publicKeyBuffer.buffer), //new Uint8Array(existingUser.credentials.response.publicKey),
         counter: 0, //passkey.counter,
         transports: existingUser.credentials.response.transports,
       },
