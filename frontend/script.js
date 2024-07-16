@@ -1,7 +1,7 @@
 const registerButton = document.getElementById('registerBtn');
 const loginButton = document.getElementById('loginBtn');
 const emailInput = document.getElementById('emailInput');
-const { startRegistration } = SimpleWebAuthnBrowser;
+const { startRegistration, startAuthentication } = SimpleWebAuthnBrowser;
 class ApiHelper {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
