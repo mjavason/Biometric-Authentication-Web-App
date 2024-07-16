@@ -81,21 +81,17 @@ const api = new ApiHelper(
 async function createCredential(registrationData) {
   try {
     // Pass the options to the authenticator and wait for a response
-    const attResp = await startRegistration(await registrationData.options);
+    const credentials = await startRegistration(await registrationData.options);
 
-    // const credentials = await navigator.credentials.create({
-    //   publicKey: registrationData.options,
-    // });
-
-    // await api
-    //   .post(`/set-credential`, {
-    //     email: registrationData.user.email,
-    //     credentials: { credentialId, publicKeyBytes },
-    //   })
-    //   .then((data) => {
-    //     if (!data) return;
-    //     window.alert(data.message);
-    //   });
+    await api
+      .post(`/set-credential`, {
+        email: registrationData.user.email,
+        credentials,
+      })
+      .then((data) => {
+        if (!data) return;
+        window.alert(data.message);
+      });
   } catch (e) {
     console.error('Error creating credential:', e);
     window.alert(e.message);

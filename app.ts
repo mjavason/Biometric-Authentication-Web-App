@@ -31,7 +31,7 @@ const rpName = 'SimpleWebAuthn Example';
  * A unique identifier for your website. 'localhost' is okay for
  * local dev
  */
-const rpID = 'localhost';
+const rpID = 'biometric-authentication-web-app.onrender.com';
 /**
  * The URL at which registrations and authentications should occur.
  * 'http://localhost' and 'http://localhost:PORT' are also valid.
