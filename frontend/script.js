@@ -65,6 +65,7 @@ class ApiHelper {
         `Error: ${response.status} ${response.statusText} - ${errorData.message}`
       );
     }
+    console.log('API response:', response);
     return response.json();
   }
 
@@ -91,6 +92,7 @@ async function createCredential(registrationData) {
       .then((data) => {
         if (!data) return;
         window.alert(data.message);
+        // console.log(data)
       });
   } catch (e) {
     console.error('Error creating credential:', e);
@@ -103,7 +105,6 @@ registerButton.addEventListener('click', () => {
 
   // POST request example
   api.post(`/register/${userEmail}`).then((data) => {
-    console.log('POST response:', data);
     // window.alert(data.message);
     createCredential(data.data);
   });

@@ -22,7 +22,12 @@ dotenv.config({ path: './.env' });
 //#region keys and configs
 const PORT = process.env.PORT || 3000;
 const baseURL = 'https://httpbin.org';
-var users: { email: string; id: string; credentials?: any }[] = [];
+var users: {
+  email: string;
+  id: string;
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON;
+  credentials?: any;
+}[] = [];
 /**
  * Human-readable title for your website
  */
@@ -54,7 +59,7 @@ function generateRandomNumbers(count: number, min: number, max: number) {
 }
 
 app.post('/register/:email', async (req: Request, res: Response) => {
-  const user = {
+  const user: any = {
     email: req.params.email,
     id: generateRandomNumbers(9, 0, 9),
   };
@@ -72,9 +77,6 @@ app.post('/register/:email', async (req: Request, res: Response) => {
   //     .status(403)
   //     .send({ success: false, message: 'User email already exists' });
   // }
-
-  users.push(user);
-  // console.log(users);
 
   const options: PublicKeyCredentialCreationOptionsJSON =
     await generateRegistrationOptions({
@@ -100,6 +102,10 @@ app.post('/register/:email', async (req: Request, res: Response) => {
       },
     });
 
+  user.registrationOptions = options;
+  users.push(user);
+  // console.log(users);
+
   return res.send({
     message: 'User registered successfully',
     data: {
@@ -120,16 +126,24 @@ app.post('/set-credential', async (req: Request, res: Response) => {
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].email == email) {
-      if (users[i].credentials)
+      if (users[i].credentials) {
         return res.status(403).send({
           successful: false,
           message: 'Registration already complete. Try logging in',
         });
+      }
 
+      let verification = await verifyRegistrationResponse({
+        response: credentials,
+        expectedChallenge: users[i].registrationOptions.challenge,
+        expectedOrigin: origin,
+        expectedRPID: rpID,
+      });
       users[i].credentials = credentials;
       return res.send({
         successful: true,
         message: 'Registration complete. Now try logging in',
+        verification
       });
     }
   }
