@@ -193,6 +193,58 @@ app.get('/get-credential/:email', async (req: Request, res: Response) => {
     .send({ success: false, message: 'User does not exist. Please register' });
 });
 
+//once the user has input their webauthn credentials, we can then verify it against what is stored.
+app.post('/login', async (req: Request, res: Response) => {
+  const { email, credentials } = req.body;
+  let existingUser;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].email == email) {
+      existingUser = users[i];
+      break;
+    }
+  }
+
+  //perform the webauthn check here
+  if (existingUser) {
+    const { credentialId, publicKeyBytes } = existingUser.credentials;
+
+    let verification = await verifyAuthenticationResponse({
+      response: credentials,
+      expectedChallenge: existingUser.currentAuthenticationOptions.challenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      authenticator: {
+        credentialID: existingUser.credentials.id,
+        credentialPublicKey: existingUser.credentials.response.publicKey,
+        counter: 0, //passkey.counter,
+        transports: existingUser.credentials.response.transports,
+      },
+    });
+
+    if (verification) {
+      return res.send({
+        success: true,
+        message: 'Logged in successfully',
+        data: existingUser,
+      });
+      // return 'Hooray! User is authenticated! 🎉';
+    } else {
+      return res.status(403).send({
+        success: false,
+        message: 'Authentication failed',
+        data: existingUser,
+      });
+      // return 'Verification failed. 😭';
+      //   throw new Error('User verification failed.');
+    }
+  }
+
+  return res
+    .status(404)
+    .send({ success: false, message: 'User email does not exist' });
+});
+
 app.get('/users', async (req: Request, res: Response) => {
   res.send({
     success: true,
