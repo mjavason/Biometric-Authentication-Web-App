@@ -110,7 +110,7 @@ async function getCredential(email) {
     console.log('assertion', credentials);
 
     let login = await api.post('/login', {
-      email: user.email,
+      email,
       credentials,
     });
     if (!login) return;
