@@ -12,7 +12,15 @@
   <body style="text-align: center">
     <h1>Biometric App Test</h1>
     <form action="">
-      <input type="email" required name="email" id="emailInput" />
+      <input
+        type="email"
+        required
+        name="email"
+        id="emailInput"
+        autocomplete="webauthn"
+        autocomplete="username webauthn"
+        autocomplete="current-password webauthn"
+      />
       <input type="button" id="registerBtn" value="Register" />
       <input type="button" id="loginBtn" value="Login" />
     </form>
