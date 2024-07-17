@@ -31,6 +31,7 @@ var users: {
   credentials?: any;
   registrationResponse?: SimpleWebAuthnServer.VerifiedRegistrationResponse;
   currentAuthenticationOptions?: any;
+  credentialPublicKey: Buffer;
 }[] = [];
 /**
  * Human-readable title for your website
@@ -146,6 +147,13 @@ app.post('/set-credential', async (req: Request, res: Response) => {
         expectedRPID: rpID,
       });
       users[i].credentials = credentials;
+
+      const encoder = new TextEncoder();
+      users[i].credentialPublicKey = Buffer.from(
+        credentials.response.publicKey,
+        'utf-8'
+      );
+
       users[i].registrationResponse = verification;
       return res.send({
         successful: true,
@@ -209,10 +217,11 @@ app.post('/login', async (req: Request, res: Response) => {
 
   //perform the webauthn check here
   if (existingUser) {
-    const publicKeyBuffer = Buffer.from(
-      existingUser.credentials.response.publicKey,
-      'utf-8'
-    );
+    // const publicKeyBuffer = Buffer.from(
+    //   existingUser.credentials.response.publicKey,
+    //   'utf-8'
+    // );
+    // console.log(publicKeyBuffer.buffer);
 
     // console.log('public key', existingUser.credentials.response.publicKey);
 
@@ -223,7 +232,9 @@ app.post('/login', async (req: Request, res: Response) => {
       expectedRPID: rpID,
       authenticator: {
         credentialID: existingUser.credentials.id,
-        credentialPublicKey: new Uint8Array(publicKeyBuffer.buffer), //new Uint8Array(existingUser.credentials.response.publicKey),
+        credentialPublicKey: new Uint8Array(
+          existingUser.credentialPublicKey.buffer
+        ), //new Uint8Array(existingUser.credentials.response.publicKey),
         counter: 0, //passkey.counter,
         transports: existingUser.credentials.response.transports,
       },
